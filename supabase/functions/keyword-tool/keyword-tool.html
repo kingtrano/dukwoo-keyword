@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>덕우 키워드 최적화</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+
+h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+h1 span { color: #f97316; }
+.subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 0; margin-bottom: 32px; background: #1e293b; border-radius: 12px; padding: 4px; }
+.tab-btn {
+  flex: 1; padding: 14px 20px; border: none; border-radius: 10px; font-size: 15px;
+  font-weight: 600; cursor: pointer; background: transparent; color: #64748b;
+  transition: all 0.2s; font-family: inherit;
+}
+.tab-btn.active { background: linear-gradient(135deg, #f97316, #ea580c); color: white; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3); }
+.tab-btn:not(.active):hover { color: #e2e8f0; background: #334155; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Single Input */
+.single-input-wrap { display: flex; gap: 12px; margin-bottom: 24px; }
+.single-input {
+  flex: 1; padding: 14px 18px; border: 2px solid #334155; border-radius: 12px;
+  background: #1e293b; color: #e2e8f0; font-size: 16px; font-family: inherit; outline: none; transition: border-color 0.2s;
+}
+.single-input:focus { border-color: #f97316; }
+.single-input::placeholder { color: #475569; }
+.btn-search {
+  padding: 14px 28px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600;
+  cursor: pointer; background: linear-gradient(135deg, #f97316, #ea580c); color: white;
+  font-family: inherit; white-space: nowrap; transition: transform 0.1s, opacity 0.2s;
+}
+.btn-search:hover { transform: scale(1.02); }
+.btn-search:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* Single Status */
+.single-status { text-align: center; padding: 20px; color: #94a3b8; font-size: 14px; display: none; }
+.single-status.show { display: block; }
+
+/* Summary */
+.single-summary { display: none; background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.single-summary.show { display: block; }
+.summary-row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+.summary-label { font-size: 13px; color: #64748b; }
+.summary-val { font-size: 22px; font-weight: 700; color: #f97316; }
+.pipeline-text { font-size: 13px; color: #94a3b8; margin-top: 8px; }
+.pipeline-text strong { color: #e2e8f0; }
+
+/* Grade badges */
+.grade-badge {
+  display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 12px;
+  font-weight: 800; letter-spacing: 1px; min-width: 32px; text-align: center;
+}
+.grade-S { background: linear-gradient(135deg, #f59e0b, #d97706); color: #1c1917; }
+.grade-A { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; }
+.grade-B { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
+.grade-C { background: #334155; color: #94a3b8; }
+.grade-D { background: #1e293b; color: #475569; border: 1px solid #334155; }
+
+/* Competition badge */
+.comp-badge { font-size: 12px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+.comp-low { background: #064e3b; color: #34d399; }
+.comp-mid { background: #422006; color: #fbbf24; }
+.comp-high { background: #450a0a; color: #f87171; }
+
+/* Strategy tag */
+.strat-tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: #1e293b; border: 1px solid #334155; color: #94a3b8; white-space: nowrap; }
+.strat-gold { border-color: #d97706; color: #fbbf24; background: #1c1917; }
+.strat-push { border-color: #16a34a; color: #4ade80; background: #052e16; }
+
+/* Table */
+.kw-table-wrap { display: none; background: #1e293b; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+.kw-table-wrap.show { display: block; }
+.kw-table { width: 100%; border-collapse: collapse; }
+.kw-table thead th {
+  padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; background: #0f172a; border-bottom: 1px solid #334155;
+}
+.kw-table thead th:first-child { width: 40px; text-align: center; }
+.kw-table tbody td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #1a2332; }
+.kw-table tbody tr:last-child td { border-bottom: none; }
+.kw-table tbody tr:hover { background: #172033; }
+.kw-table tbody td:first-child { text-align: center; color: #475569; font-size: 12px; font-weight: 600; }
+.kw-table .kw-text { color: #e2e8f0; }
+.kw-table .vol-cell { text-align: right; font-weight: 600; color: #f97316; white-space: nowrap; }
+
+.vol-bar { display: inline-block; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #f97316, #fb923c); margin-right: 8px; vertical-align: middle; min-width: 4px; }
+
+/* CTR cell */
+.ctr-val { color: #94a3b8; font-size: 12px; }
+.ctr-good { color: #4ade80; }
+
+/* Copy button */
+.btn-copy-kw {
+  width: 100%; padding: 14px; border: 1px solid #334155; border-radius: 12px; font-size: 14px;
+  font-weight: 600; cursor: pointer; background: #1e293b; color: #94a3b8; font-family: inherit;
+  transition: all 0.2s; display: none;
+}
+.btn-copy-kw.show { display: block; }
+.btn-copy-kw:hover { border-color: #f97316; color: #f97316; }
+
+/* Grade summary bar */
+.grade-summary { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.grade-summary .gs-item { font-size: 12px; color: #94a3b8; }
+.grade-summary .gs-item strong { margin-left: 4px; }
+
+/* Drop Zone */
+.dropzone {
+  border: 2px dashed #334155; border-radius: 16px; padding: 60px 40px; text-align: center;
+  cursor: pointer; transition: all 0.2s; background: #1e293b; margin-bottom: 24px;
+}
+.dropzone:hover, .dropzone.dragover { border-color: #f97316; box-shadow: 0 0 30px rgba(249, 115, 22, 0.1); }
+.dropzone-icon { font-size: 48px; margin-bottom: 16px; }
+.dropzone-text { font-size: 16px; color: #94a3b8; }
+.dropzone-text strong { color: #e2e8f0; }
+
+/* File Info */
+.file-info { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 24px; display: none; }
+.file-info.show { display: block; }
+.file-stats { display: flex; gap: 24px; margin-top: 12px; }
+.stat { text-align: center; }
+.stat-num { font-size: 28px; font-weight: 700; color: #f97316; }
+.stat-label { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+/* Start Button */
+.btn-start {
+  width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
+  cursor: pointer; background: linear-gradient(135deg, #f97316, #ea580c); color: white;
+  margin-bottom: 24px; display: none; transition: transform 0.1s; font-family: inherit;
+}
+.btn-start:hover { transform: scale(1.01); }
+.btn-start:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-start.show { display: block; }
+
+/* Progress */
+.progress-section { display: none; margin-bottom: 24px; }
+.progress-section.show { display: block; }
+.progress-bar-wrap { background: #1e293b; border-radius: 8px; height: 8px; margin-bottom: 16px; overflow: hidden; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, #f97316, #fb923c); border-radius: 8px; transition: width 0.3s; width: 0%; }
+
+.product-list { list-style: none; }
+.product-item {
+  background: #1e293b; border-radius: 10px; padding: 14px 18px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px; font-size: 14px;
+}
+.product-item .status-icon { font-size: 18px; width: 24px; text-align: center; }
+.product-item .name { flex: 1; }
+.product-item .kw-count { color: #f97316; font-weight: 600; font-size: 13px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #334155; border-top-color: #f97316; border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+.btn-download {
+  width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
+  cursor: pointer; background: linear-gradient(135deg, #22c55e, #16a34a); color: white;
+  display: none; transition: transform 0.1s; font-family: inherit;
+}
+.btn-download:hover { transform: scale(1.01); }
+.btn-download.show { display: block; }
+
+.log {
+  margin-top: 24px; background: #0f172a; border: 1px solid #1e293b; border-radius: 10px;
+  padding: 16px; font-family: 'SF Mono', monospace; font-size: 12px; color: #64748b;
+  max-height: 200px; overflow-y: auto; display: none;
+}
+.log.show { display: block; }
+.log .info { color: #94a3b8; }
+.log .success { color: #22c55e; }
+.log .error { color: #ef4444; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .kw-table thead th:nth-child(5),
+  .kw-table tbody td:nth-child(5),
+  .kw-table thead th:nth-child(6),
+  .kw-table tbody td:nth-child(6) { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔥 <span>덕우</span> 키워드 최적화</h1>
+  <p class="subtitle">AI 키워드 확장 → 네이버 검색량 + 경쟁도 + CTR → KQS 등급 산출</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="single">🔍 1개 키워드 추출</button>
+    <button class="tab-btn" data-tab="excel">📁 엑셀 키워드 추출</button>
+  </div>
+
+  <!-- Tab 1: Single Keyword -->
+  <div class="tab-content active" id="tab-single">
+    <div class="single-input-wrap">
+      <input type="text" class="single-input" id="singleKeyword" placeholder="상품 키워드를 입력하세요 (예: 자동차커버)" />
+      <button class="btn-search" id="btnSearch">추출하기</button>
+    </div>
+
+    <div class="single-status" id="singleStatus">
+      <span class="spinner"></span>&nbsp; AI 분석 + 네이버 검증 중... 약 8초 소요
+    </div>
+
+    <div class="single-summary" id="singleSummary">
+      <div class="summary-row">
+        <div class="stat"><div class="summary-val" id="singleTotal">0</div><div class="summary-label">추출 키워드</div></div>
+        <div class="stat"><div class="summary-val" id="singleTopVol">0</div><div class="summary-label">최고 검색량</div></div>
+        <div class="stat"><div class="summary-val" id="singleSGrade">-</div><div class="summary-label">S/A등급</div></div>
+      </div>
+      <div class="pipeline-text" id="pipelineText"></div>
+      <div class="grade-summary" id="gradeSummary"></div>
+    </div>
+
+    <div class="kw-table-wrap" id="kwTableWrap">
+      <table class="kw-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>등급</th>
+            <th>키워드</th>
+            <th>검색량</th>
+            <th>경쟁도</th>
+            <th>CTR</th>
+            <th>전략</th>
+          </tr>
+        </thead>
+        <tbody id="kwTableBody"></tbody>
+      </table>
+    </div>
+
+    <button class="btn-copy-kw" id="btnCopyKw">📋 키워드 전체 복사 (쉼표 구분)</button>
+  </div>
+
+  <!-- Tab 2: Excel Upload -->
+  <div class="tab-content" id="tab-excel">
+    <div class="dropzone" id="dropzone">
+      <div class="dropzone-icon">📁</div>
+      <div class="dropzone-text"><strong>UFlat 엑셀 파일</strong>을 여기에 놓으세요<br>또는 클릭하여 선택</div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <div style="font-weight:600;" id="fileName"></div>
+      <div class="file-stats">
+        <div class="stat"><div class="stat-num" id="totalRows">0</div><div class="stat-label">전체 행</div></div>
+        <div class="stat"><div class="stat-num" id="uniqueProducts">0</div><div class="stat-label">고유 상품</div></div>
+        <div class="stat"><div class="stat-num" id="estTime">0</div><div class="stat-label">예상 시간(초)</div></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;">
+        <input type="radio" name="excelMode" value="fast"> ⚡ 빠른 모드 (~10분/1000건)
+      </label>
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;">
+        <input type="radio" name="excelMode" value="normal" checked> 🔍 정밀 모드 (~46분/1000건)
+      </label>
+    </div>
+    <button class="btn-start" id="btnStart">🚀 키워드 최적화 시작</button>
+
+    <div class="progress-section" id="progressSection">
+      <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+      <ul class="product-list" id="productList"></ul>
+    </div>
+
+    <button class="btn-download" id="btnDownload">📥 결과 엑셀 다운로드</button>
+  </div>
+
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+const API_URL = "https://uifjabklkmvfbsplvxsu.supabase.co/functions/v1/keyword-tool";
+
+// ========================
+// HELPERS
+// ========================
+function gradeClass(g) { return `grade-${g}`; }
+function compClass(c) {
+  if (c === "낮음") return "comp-low";
+  if (c === "높음") return "comp-high";
+  return "comp-mid";
+}
+function compLabel(c) {
+  if (c === "낮음") return "낮음";
+  if (c === "높음") return "높음";
+  return "중간";
+}
+function stratTag(grade, volume) {
+  if (grade === "S") return '<span class="strat-tag strat-gold">🏆 핵심공략</span>';
+  if (grade === "A") return '<span class="strat-tag strat-push">🚀 적극활용</span>';
+  if (grade === "B") return '<span class="strat-tag">📌 보조키워드</span>';
+  if (grade === "C") return '<span class="strat-tag">롱테일</span>';
+  return '<span class="strat-tag">모니터링</span>';
+}
+
+// ========================
+// TAB SWITCHING
+// ========================
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
+  });
+});
+
+// ========================
+// TAB 1: SINGLE KEYWORD
+// ========================
+const singleInput = document.getElementById("singleKeyword");
+const btnSearch = document.getElementById("btnSearch");
+const singleStatus = document.getElementById("singleStatus");
+const singleSummary = document.getElementById("singleSummary");
+const kwTableWrap = document.getElementById("kwTableWrap");
+const kwTableBody = document.getElementById("kwTableBody");
+const btnCopyKw = document.getElementById("btnCopyKw");
+
+let singleKeywords = [];
+
+singleInput.addEventListener("keydown", (e) => { if (e.key === "Enter") btnSearch.click(); });
+
+btnSearch.addEventListener("click", async () => {
+  const keyword = singleInput.value.trim();
+  if (!keyword) { singleInput.focus(); return; }
+
+  btnSearch.disabled = true;
+  btnSearch.textContent = "분석 중...";
+  singleStatus.classList.add("show");
+  singleSummary.classList.remove("show");
+  kwTableWrap.classList.remove("show");
+  btnCopyKw.classList.remove("show");
+  logEl.classList.add("show");
+  log(`단일 키워드 분석 시작: "${keyword}"`, "info");
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productName: keyword, mode: "single" }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+    singleKeywords = data.keywords || [];
+
+    // Summary
+    document.getElementById("singleTotal").textContent = singleKeywords.length;
+    const topVol = singleKeywords.length > 0 ? singleKeywords[0].volume.toLocaleString() : "0";
+    document.getElementById("singleTopVol").textContent = topVol;
+    const saCount = singleKeywords.filter(k => k.kqs_grade === "S" || k.kqs_grade === "A").length;
+    document.getElementById("singleSGrade").textContent = saCount;
+    document.getElementById("pipelineText").innerHTML =
+      `<strong>Step 1</strong> AI 생성 ${data.step1_count}개 → <strong>필터</strong> ${data.filter_count}개 → <strong>최종</strong> ${singleKeywords.length}개 KQS 등급 산출`;
+
+    // Grade summary
+    const grades = { S: 0, A: 0, B: 0, C: 0, D: 0 };
+    singleKeywords.forEach(k => { if (grades[k.kqs_grade] !== undefined) grades[k.kqs_grade]++; });
+    document.getElementById("gradeSummary").innerHTML = Object.entries(grades)
+      .filter(([, v]) => v > 0)
+      .map(([g, v]) => `<span class="gs-item"><span class="grade-badge ${gradeClass(g)}">${g}</span><strong>${v}</strong></span>`)
+      .join("");
+    singleSummary.classList.add("show");
+
+    // Table
+    const maxVol = singleKeywords.length > 0 ? singleKeywords[0].volume : 1;
+    kwTableBody.innerHTML = singleKeywords.map((kw, i) => {
+      const barWidth = Math.max(4, (kw.volume / maxVol) * 100);
+      const ctrPct = (kw.avg_ctr * 100).toFixed(1);
+      const ctrClass = kw.avg_ctr >= 0.05 ? "ctr-good" : "";
+      return `<tr>
+        <td>${i + 1}</td>
+        <td><span class="grade-badge ${gradeClass(kw.kqs_grade)}">${kw.kqs_grade}</span></td>
+        <td><span class="kw-text">${kw.keyword}</span></td>
+        <td class="vol-cell"><span class="vol-bar" style="width:${barWidth}px"></span>${kw.volume.toLocaleString()}</td>
+        <td><span class="comp-badge ${compClass(kw.comp_idx)}">${compLabel(kw.comp_idx)}</span></td>
+        <td><span class="ctr-val ${ctrClass}">${ctrPct}%</span></td>
+        <td>${stratTag(kw.kqs_grade, kw.volume)}</td>
+      </tr>`;
+    }).join("");
+    kwTableWrap.classList.add("show");
+    btnCopyKw.classList.add("show");
+
+    log(`완료: AI ${data.step1_count}개 → 필터 ${data.filter_count}개 → KQS ${singleKeywords.length}개 (S:${grades.S} A:${grades.A} B:${grades.B} C:${grades.C} D:${grades.D})`, "success");
+  } catch (err) {
+    log(`오류: ${err.message}`, "error");
+  } finally {
+    singleStatus.classList.remove("show");
+    btnSearch.disabled = false;
+    btnSearch.textContent = "추출하기";
+  }
+});
+
+btnCopyKw.addEventListener("click", () => {
+  if (!singleKeywords.length) return;
+  const text = singleKeywords.map(k => k.keyword).join(", ");
+  navigator.clipboard.writeText(text).then(() => {
+    btnCopyKw.textContent = "✅ 복사됨!";
+    setTimeout(() => { btnCopyKw.textContent = "📋 키워드 전체 복사 (쉼표 구분)"; }, 2000);
+  }).catch(() => {
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+    btnCopyKw.textContent = "✅ 복사됨!";
+    setTimeout(() => { btnCopyKw.textContent = "📋 키워드 전체 복사 (쉼표 구분)"; }, 2000);
+  });
+});
+
+// ========================
+// TAB 2: EXCEL
+// ========================
+let workbook = null, sheetData = [], productGroups = [];
+
+const dropzone = document.getElementById("dropzone");
+const fileInput = document.getElementById("fileInput");
+const fileInfo = document.getElementById("fileInfo");
+const btnStart = document.getElementById("btnStart");
+const progressSection = document.getElementById("progressSection");
+const productList = document.getElementById("productList");
+const progressBar = document.getElementById("progressBar");
+const btnDownload = document.getElementById("btnDownload");
+const logEl = document.getElementById("log");
+
+dropzone.addEventListener("click", () => fileInput.click());
+dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
+dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+dropzone.addEventListener("drop", (e) => {
+  e.preventDefault(); dropzone.classList.remove("dragover");
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener("change", (e) => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+function handleFile(file) {
+  log(`파일 로드: ${file.name}`, "info");
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    workbook = XLSX.read(e.target.result, { type: "array" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    const colD = 3, colE = 4, colB = 1, colM = 12, colT = 19;
+    const groups = {};
+    for (let i = 1; i < sheetData.length; i++) {
+      const row = sheetData[i];
+      const code = row[colB] || `row_${i}`;
+      if (!groups[code]) groups[code] = { code, name: row[colE] || row[colD] || "", imageUrl: row[colM] || "", categoryName: row[colT] || "", rows: [], keywords: null };
+      groups[code].rows.push(i);
+    }
+    productGroups = Object.values(groups);
+    document.getElementById("fileName").textContent = `📄 ${file.name}`;
+    document.getElementById("totalRows").textContent = sheetData.length - 1;
+    document.getElementById("uniqueProducts").textContent = productGroups.length;
+    document.getElementById("estTime").textContent = `~${Math.ceil(productGroups.length / 5 * 13)}`;
+    fileInfo.classList.add("show"); btnStart.classList.add("show");
+    log(`${productGroups.length}개 고유 상품 감지`, "success");
+
+    // ── 마이카테 코드 → 카테고리명 변환 (jj2_category 테이블) ──
+    const catCodes = [...new Set(productGroups.map(g => g.categoryName).filter(c => c && /^[A-Z]?\d+/.test(c)))];
+    if (catCodes.length > 0) {
+      log(`마이카테 조회 중...`, "info");
+      try {
+        const SB_URL = "https://uifjabklkmvfbsplvxsu.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpZmphYmtsa212ZmJzcGx2eHN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNDMwOTEsImV4cCI6MjA4OTcxOTA5MX0.1_rWJ0RDk_KXw86ewRq-F9DKIj6D7oaCzRWlrImzu2M";
+        const codeFilter = catCodes.map(c => `"${c}"`).join(",");
+        const catRes = await fetch(`${SB_URL}/rest/v1/jj2_category?category_code=in.(${codeFilter})&select=category_code,category_name`, {
+          headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
+        });
+        if (catRes.ok) {
+          const catData = await catRes.json();
+          const catMap = {};
+          for (const row of catData) catMap[row.category_code] = row.category_name;
+          let mapped = 0;
+          for (const g of productGroups) {
+            if (g.categoryName && catMap[g.categoryName]) {
+              g.categoryName = catMap[g.categoryName];
+              mapped++;
+            }
+          }
+          log(`카테고리 조회 완료 — ${mapped}개 코드 매핑`, "success");
+        }
+      } catch (e) { log(`카테고리 조회 실패 (무시): ${e.message}`, "error"); }
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+btnStart.addEventListener("click", async () => {
+  btnStart.disabled = true; btnStart.textContent = "⏳ 처리 중...";
+  progressSection.classList.add("show"); logEl.classList.add("show");
+
+  productList.innerHTML = productGroups.map((g, i) => `
+    <li class="product-item" id="prod-${i}">
+      <span class="status-icon">⬚</span><span class="name">${g.name}</span>
+      <span class="kw-count" id="kwcount-${i}"></span>
+    </li>`).join("");
+
+  const delay = (ms) => new Promise(r => setTimeout(r, ms));
+  const MAX_RETRIES = 2;
+  const RETRY_DELAY = 8000;
+  const CONCURRENCY = 20;  // 동시 20건 병렬 처리
+
+  const excelMode = document.querySelector('input[name="excelMode"]:checked')?.value || "normal";
+  log(`모드: ${excelMode === "fast" ? "⚡ 빠른 모드" : "🔍 정밀 모드"}`, "info");
+
+  async function processOne(g) {
+    const payload = excelMode === "fast"
+      ? { action: "excel-fast", productName: g.name, categoryName: g.categoryName }
+      : { productName: g.name, imageUrl: g.imageUrl, categoryName: g.categoryName };
+    const res = await fetch(API_URL, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    return await res.json();
+  }
+
+  let completed = 0;
+  const failedItems = [];
+
+  async function processWithRetry(g, idx) {
+    const el = document.getElementById(`prod-${idx}`);
+    const kwEl = document.getElementById(`kwcount-${idx}`);
+    el.querySelector(".status-icon").innerHTML = '<span class="spinner"></span>';
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      if (attempt > 0) {
+        kwEl.textContent = `⏳ 재시도 ${attempt}/${MAX_RETRIES}`;
+        await delay(RETRY_DELAY);
+        el.querySelector(".status-icon").innerHTML = '<span class="spinner"></span>';
+      }
+      try {
+        const data = await processOne(g);
+        g.keywords = data.keywords || [];
+        const fc = data.filter_count !== undefined ? data.filter_count : "?";
+        const nc = data.naver_count !== undefined ? data.naver_count : "?";
+        const ic = data.image_count !== undefined ? data.image_count : g.keywords.length;
+        const cc = data.category_count !== undefined ? data.category_count : ic;
+        kwEl.textContent = `${data.step1_count}→${fc}→${nc}→이미지${ic}→카테${cc}개`;
+        log(`키워드 완료: ${g.name} — AI ${data.step1_count}→필터${fc}→네이버${nc}→이미지${ic}→카테${cc}개`, "success");
+
+        // ── generate-title: 키워드 기반 최적화 상품명 생성 → D열 ──
+        if (g.keywords.length > 0) {
+          try {
+            const titleRes = await fetch(API_URL, {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "generate-title", productName: g.name, keywords: g.keywords, categoryName: g.categoryName }),
+            });
+            if (titleRes.ok) {
+              const titleData = await titleRes.json();
+              g.title = titleData.title || "";
+              log(`상품명 생성: "${g.title}" (${titleData.length}자, 커버리지 ${titleData.coverage})`, "success");
+            } else {
+              log(`상품명 생성 실패 (${titleRes.status}) — 키워드만 사용`, "error");
+            }
+          } catch (titleErr) {
+            log(`상품명 생성 오류: ${titleErr.message} — 키워드만 사용`, "error");
+          }
+        }
+
+        el.querySelector(".status-icon").textContent = "✅";
+        return;
+      } catch (err) {
+        log(`실패 (${attempt+1}/${MAX_RETRIES+1}): ${g.name} — ${err.message}`, "error");
+      }
+    }
+    el.querySelector(".status-icon").textContent = "🔴";
+    kwEl.textContent = "오류";
+    g.keywords = [];
+    failedItems.push(g.name);
+  }
+
+  // 병렬 배치 처리: CONCURRENCY개씩 동시 실행
+  for (let i = 0; i < productGroups.length; i += CONCURRENCY) {
+    const batch = productGroups.slice(i, i + CONCURRENCY);
+    const promises = batch.map((g, j) => processWithRetry(g, i + j));
+    await Promise.all(promises);
+    completed += batch.length;
+    progressBar.style.width = `${(completed / productGroups.length) * 100}%`;
+    log(`진행: ${completed}/${productGroups.length} (${Math.round(completed/productGroups.length*100)}%)`, "info");
+    if (i + CONCURRENCY < productGroups.length) await delay(1000);  // 배치 간 1초만
+  }
+  const failMsg = failedItems.length > 0 ? ` (실패 ${failedItems.length}건)` : "";
+  btnStart.textContent = "✅ 처리 완료" + failMsg; btnDownload.classList.add("show");
+  log(`전체 처리 완료${failMsg}. 다운로드 버튼을 클릭하세요.`, "success");
+});
+
+btnDownload.addEventListener("click", () => {
+  const colL = 11, colD = 3;
+  for (const g of productGroups) {
+    if (!g.keywords || !g.keywords.length) continue;
+    // D열: 최적화된 상품명 쓰기
+    if (g.title) {
+      for (const r of g.rows) sheetData[r][colD] = g.title;
+    }
+    const kws = g.keywords, rowCount = g.rows.length;
+    if (rowCount === 1) {
+      sheetData[g.rows[0]][colL] = kws.map(k => k.keyword).join(",");
+    } else {
+      const pairs = []; let left = 0, right = kws.length - 1;
+      while (left <= right) {
+        if (left === right) pairs.push(kws[left].keyword);
+        else pairs.push(kws[left].keyword + "," + kws[right].keyword);
+        left++; right--;
+      }
+      for (let r = 0; r < rowCount; r++) sheetData[g.rows[r]][colL] = pairs[r % pairs.length];
+    }
+  }
+  const newSheet = XLSX.utils.aoa_to_sheet(sheetData);
+  const newWb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(newWb, newSheet, workbook.SheetNames[0]);
+  XLSX.writeFile(newWb, "키워드최적화_결과.xlsx");
+  const titleCount = productGroups.filter(g => g.title).length;
+  log(`다운로드 완료 — D열 상품명 ${titleCount}건 + L열 키워드 고트래픽↔롱테일 페어링 분배`, "success");
+});
+
+function log(msg, type = "info") {
+  const line = document.createElement("div"); line.className = type;
+  line.textContent = `[${new Date().toLocaleTimeString("ko-KR")}] ${msg}`;
+  logEl.appendChild(line); logEl.scrollTop = logEl.scrollHeight;
+}
+</script>
+</body>
+</html>

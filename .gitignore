@@ -1,0 +1,36 @@
+# 시스템
+.DS_Store
+Thumbs.db
+
+# 환경변수 (Supabase Secrets에 등록, 코드/repo에 절대 X)
+.env
+.env.local
+.env.*.local
+*.env
+
+# 의존성
+node_modules/
+
+# 빌드 산출물
+dist/
+.next/
+out/
+
+# 로그
+*.log
+npm-debug.log*
+yarn-error.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# 임시 파일
+*.tmp
+*.bak
+~$*
+
+# Supabase 로컬 개발 데이터
+supabase/.branches
+supabase/.temp

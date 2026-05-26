@@ -1,0 +1,49 @@
+name: Deploy Supabase Edge Functions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:  # 수동 트리거 (GitHub UI에서 실행 가능)
+
+env:
+  SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+  SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy keyword-tool
+        working-directory: ./supabase
+        run: |
+          supabase functions deploy keyword-tool \
+            --no-verify-jwt \
+            --project-ref $SUPABASE_PROJECT_REF
+
+      - name: Deploy keyword-tool-ui
+        working-directory: ./supabase
+        run: |
+          supabase functions deploy keyword-tool-ui \
+            --no-verify-jwt \
+            --project-ref $SUPABASE_PROJECT_REF
+
+      - name: Notify success
+        if: success()
+        run: echo "✅ Edge Functions 배포 완료 — 약 1분 후 라이브 반영"
+
+      - name: Notify failure
+        if: failure()
+        run: echo "❌ 배포 실패 — Actions 로그 확인 필요"

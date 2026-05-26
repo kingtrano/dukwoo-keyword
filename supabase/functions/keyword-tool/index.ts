@@ -1151,8 +1151,13 @@ Deno.serve(async (req: Request) => {
 
   // GET → HTML UI 서빙
   if (req.method === "GET") {
-    const html = await Deno.readTextFile(new URL("./keyword-tool.html", import.meta.url).pathname);
-    return new Response(html, { headers: { ...cors, "Content-Type": "text/html; charset=utf-8" } });
+    try {
+      const fileUrl = new URL("./keyword-tool.html", import.meta.url);
+      const html = await Deno.readTextFile(fileUrl);
+      return new Response(html, { headers: { ...cors, "Content-Type": "text/html; charset=utf-8" } });
+    } catch (e) {
+      return new Response(`<h1>UI 로드 실패</h1><pre>${e.message}</pre><p>import.meta.url: ${import.meta.url}</p>`, { status: 500, headers: { ...cors, "Content-Type": "text/html; charset=utf-8" } });
+    }
   }
 
   if (req.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: { ...cors, "Content-Type": "application/json" } });

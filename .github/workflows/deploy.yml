@@ -27,14 +27,12 @@ jobs:
           version: latest
 
       - name: Deploy keyword-tool
-        working-directory: ./supabase
         run: |
           supabase functions deploy keyword-tool \
             --no-verify-jwt \
             --project-ref $SUPABASE_PROJECT_REF
 
       - name: Deploy keyword-tool-ui
-        working-directory: ./supabase
         run: |
           supabase functions deploy keyword-tool-ui \
             --no-verify-jwt \

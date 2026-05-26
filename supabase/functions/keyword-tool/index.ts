@@ -1,10 +1,16 @@
+// dukwoo-keyword v54.1 — 카테고리 필터 안전장치 2 추가 (1~4개 키워드 BYPASS)
+// GitHub Actions 자동 배포 첫 테스트
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const GEMINI_KEY = Deno.env.get("GEMINI_KEY") || "AIzaSyBEghSACdDkvF5Tj9cxVH2iCjsGfazrslU";
-const NAVER_CUSTOMER_ID = Deno.env.get("NAVER_CUSTOMER_ID") || "3062209";
-const NAVER_API_KEY = Deno.env.get("NAVER_API_KEY") || "0100000000f8d969b084ed12e9e2b3c91d00f5594720a34698db84b9cab29ca3ba17df1380";
-const NAVER_SECRET_KEY = Deno.env.get("NAVER_SECRET_KEY") || "AQAAAAD42WmwhO0S6eKzyR0A9VlHZ3DPtDTEkt8TC64DmcIAxg==";
+// v54.1+ 보안: 모든 secret은 Supabase Edge Function Secrets에만 등록. 코드에 fallback 박지 않음.
+const GEMINI_KEY = Deno.env.get("GEMINI_KEY") ?? "";
+const NAVER_CUSTOMER_ID = Deno.env.get("NAVER_CUSTOMER_ID") ?? "";
+const NAVER_API_KEY = Deno.env.get("NAVER_API_KEY") ?? "";
+const NAVER_SECRET_KEY = Deno.env.get("NAVER_SECRET_KEY") ?? "";
+if (!GEMINI_KEY || !NAVER_API_KEY) {
+  console.error("[FATAL] Required env vars missing: GEMINI_KEY or NAVER_API_KEY");
+}
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://uifjabklkmvfbsplvxsu.supabase.co";
 const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";

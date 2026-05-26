@@ -32,5 +32,7 @@ yarn-error.log
 ~$*
 
 # Supabase 로컬 개발 데이터
-supabase/.branches
-supabase/.temp
+**/.branches
+**/.temp
+.branches/
+.temp/

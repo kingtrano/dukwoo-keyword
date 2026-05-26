@@ -1,6 +1,16 @@
 # 시스템
 .DS_Store
 Thumbs.db
+**/~$*
+**/.~$*
+*.gdoc
+
+# docs/ 중복·임시 (Drive에서 가져왔지만 무시할 것들)
+docs/keyword-tool.html
+docs/기획/
+docs/덕우_네이버_키워드_파이프라인.md
+docs/키워드_최적화_로직_v34_프롬프트포함.md
+docs/SMHA*.zip
 
 # 환경변수 (Supabase Secrets에 등록, 코드/repo에 절대 X)
 .env

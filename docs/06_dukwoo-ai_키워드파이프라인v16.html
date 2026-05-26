@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>덕우 AI 키워드 파이프라인 v16</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Pretendard',-apple-system,'Segoe UI',sans-serif;background:#080c14;color:#c8d0e0;min-height:100vh;padding:40px 16px;}
+  .wrap{max-width:1000px;margin:0 auto;}
+  h1{text-align:center;font-size:26px;font-weight:800;color:#fff;margin-bottom:4px;}
+  .sub{text-align:center;font-size:13px;color:#4a5a7a;margin-bottom:48px;}
+  .sub span{background:#1a2a4a;color:#5ac8ff;padding:2px 10px;border-radius:10px;font-size:11px;margin-left:6px;}
+
+  /* ── 플로우 ── */
+  .flow{display:flex;flex-direction:column;align-items:center;gap:0;}
+  .arrow{display:flex;flex-direction:column;align-items:center;padding:4px 0;}
+  .arrow .line{width:2px;height:22px;background:linear-gradient(to bottom,var(--c1,#2a4a6a),var(--c2,#4a8adf));}
+  .arrow .head{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid var(--c2,#4a8adf);}
+  .arrow .lbl{font-size:10px;color:#4a6a8a;margin-top:2px;background:#0a0e18;padding:1px 8px;border-radius:8px;}
+  .section-lbl{text-align:center;font-size:10px;color:#3a4a6a;letter-spacing:2px;text-transform:uppercase;margin:20px 0 10px;}
+
+  /* ── 카드 공통 ── */
+  .card{width:100%;max-width:920px;border-radius:14px;overflow:hidden;margin:0 auto;}
+  .card-head{padding:16px 24px;display:flex;align-items:center;gap:12px;}
+  .card-head .icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;}
+  .card-head .info h3{font-size:15px;font-weight:700;color:#fff;}
+  .card-head .info p{font-size:11px;color:#6a7a9a;margin-top:1px;}
+  .card-head .tag{margin-left:auto;font-size:10px;padding:3px 10px;border-radius:14px;font-weight:600;}
+  .card-body{padding:0 24px 18px;}
+  .steps{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .step{background:rgba(0,0,0,.3);padding:8px 14px;border-radius:8px;font-size:11px;color:#a0b0c8;display:flex;align-items:center;gap:6px;}
+  .step .n{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;}
+  .sa{color:#3a5a7a;font-size:14px;}
+
+  /* ── 색상 테마 ── */
+  .c-input{background:linear-gradient(135deg,#0d1a30,#111e38);border:1px solid #1a3060;}
+  .c-parse{background:linear-gradient(135deg,#141824,#1a2030);border:1px solid #2a3050;}
+  .c-parse .icon{background:#2a3050;} .c-parse .tag{background:#2a3050;color:#8a9abb;} .c-parse .n{background:#2a3050;color:#8a9abb;}
+  .c-gem{background:linear-gradient(135deg,#0d1a3c,#15254a);border:1px solid #1a3a6a;}
+  .c-gem .icon{background:#1a3a6a;} .c-gem .tag{background:#1a3a6a;color:#5ac8ff;} .c-gem .n{background:#1a3a6a;color:#5ac8ff;}
+  .c-filter{background:linear-gradient(135deg,#1a1018,#2a1525);border:1px solid #4a2040;}
+  .c-filter .icon{background:#4a2040;} .c-filter .tag{background:#4a2040;color:#e070b0;} .c-filter .n{background:#4a2040;color:#e070b0;}
+  .c-naver{background:linear-gradient(135deg,#1a1808,#2a2510);border:1px solid #5a4a1a;}
+  .c-naver .icon{background:#5a4a1a;} .c-naver .tag{background:#5a4a1a;color:#ffbb44;} .c-naver .n{background:#5a4a1a;color:#ffbb44;}
+  .c-vision{background:linear-gradient(135deg,#0d2a1a,#133a2a);border:1px solid #1a5a3a;}
+  .c-vision .icon{background:#1a5a3a;} .c-vision .tag{background:#1a5a3a;color:#5affaa;} .c-vision .n{background:#1a5a3a;color:#5affaa;}
+  .c-kqs{background:linear-gradient(135deg,#1a0d3c,#2a134a);border:1px solid #3a1a6a;}
+  .c-kqs .icon{background:#3a1a6a;} .c-kqs .tag{background:#3a1a6a;color:#b07aff;} .c-kqs .n{background:#3a1a6a;color:#b07aff;}
+  .c-out{background:linear-gradient(135deg,#0a2010,#153018);border:1px solid #2a5a2a;}
+
+  /* ── 필터 뱃지 ── */
+  .fb{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:4px 10px;border-radius:6px;margin:3px 2px 0 0;}
+  .fb-r{background:#2a1218;color:#ff6b6b;border:1px solid #4a2030;}
+  .fb-g{background:#122a18;color:#5affaa;border:1px solid #2a4a30;}
+  .fb-y{background:#2a2810;color:#ffdd88;border:1px solid #4a4a20;}
+
+  /* ── 모드 분기 ── */
+  .mode-split{width:100%;max-width:920px;display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .mode-card{border-radius:12px;padding:18px 20px;}
+  .mode-card h4{font-size:13px;font-weight:700;margin-bottom:8px;}
+  .mode-single{background:#111828;border:1px solid #2a3a5a;}
+  .mode-single h4{color:#5ac8ff;}
+  .mode-excel{background:#111828;border:1px solid #2a5a3a;}
+  .mode-excel h4{color:#5affaa;}
+  .mode-card .fl{font-size:11px;color:#7a8aaa;line-height:1.8;}
+  .mode-card .fl b{color:#c0d0e8;}
+
+  /* ── KQS 예시 ── */
+  .kqs-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .kqs-tag{font-size:11px;padding:5px 10px;border-radius:6px;font-weight:600;}
+  .kqs-s{background:#1a3a1a;color:#5affaa;border:1px solid #2a6a2a;}
+  .kqs-a{background:#1a2a3a;color:#5ac8ff;border:1px solid #2a4a6a;}
+  .kqs-b{background:#2a2a10;color:#ffdd88;border:1px solid #4a4a20;}
+  .kqs-c{background:#2a1a10;color:#ffaa66;border:1px solid #4a3a20;}
+  .kqs-d{background:#2a1418;color:#ff7a7a;border:1px solid #4a2a30;}
+
+  /* ── 출력 ── */
+  .out-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;}
+  .out-card{padding:14px;border-radius:10px;font-size:12px;}
+  .out-b{background:#12101a;border:1px solid #2a2040;} .out-b .ol{color:#aa6666;font-size:10px;font-weight:700;margin-bottom:4px;}
+  .out-a{background:#101a12;border:1px solid #204a2a;} .out-a .ol{color:#66aa66;font-size:10px;font-weight:700;margin-bottom:4px;}
+  .out-card .txt{color:#a0b0c0;line-height:1.6;}
+  .hl{color:#5affaa;font-weight:600;}
+
+  /* ── 아키텍처 ── */
+  .arch-grid{width:100%;max-width:920px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:10px;}
+  .arch{background:#111822;border:1px solid #1a2a3a;border-radius:12px;padding:16px;}
+  .arch h4{font-size:12px;font-weight:700;margin-bottom:8px;}
+  .arch .mono{font-family:'SF Mono',monospace;font-size:10px;background:#080c14;padding:10px;border-radius:6px;color:#7a9a7a;line-height:1.7;}
+
+  /* ── 범례 ── */
+  .legend{margin-top:36px;display:flex;justify-content:center;gap:18px;flex-wrap:wrap;font-size:11px;color:#4a5a7a;}
+  .legend-i{display:flex;align-items:center;gap:6px;}
+  .legend-d{width:8px;height:8px;border-radius:50%;}
+
+  .ver{text-align:center;font-size:10px;color:#2a3a5a;margin-top:24px;letter-spacing:1px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>덕우 AI 키워드 최적화 파이프라인</h1>
+  <p class="sub">상품명 입력 → 6-Step Pipeline → KQS 등급 → 엑셀 다운로드 <span>Edge Function v16</span></p>
+
+  <div class="flow">
+
+    <!-- ═══ 입력 ═══ -->
+    <div class="section-lbl">입력</div>
+
+    <div class="card c-input" style="padding:20px 24px;">
+      <h3 style="font-size:15px;font-weight:700;color:#5ac8ff;margin-bottom:10px;">📊 엑셀 드래그 & 드롭 업로드</h3>
+      <div style="font-size:12px;color:#8a9abb;line-height:1.8;">
+        UFlat 원본 엑셀 → 웹 UI에 드래그 앤 드롭<br>
+        각 상품의 <b style="color:#fff;">이미지 URL(N열)</b> + <b style="color:#fff;">상품명(D열)</b> 자동 추출<br>
+        → 두 가지 모드: <b style="color:#5ac8ff;">single</b> (개별 조회) / <b style="color:#5affaa;">excel</b> (일괄 최적화)
+      </div>
+      <div style="margin-top:8px;">
+        <span class="fb fb-g">keyword-optimizer.html</span>
+        <span class="fb fb-g">Supabase Edge Function v16</span>
+        <span class="fb fb-y">Rate Limit: 30req/min/IP</span>
+      </div>
+    </div>
+
+    <div class="arrow" style="--c1:#1a3a6a;--c2:#5ac8ff;"><div class="line"></div><div class="head"></div></div>
+
+    <!-- ═══ Step 0: 상품명 파싱 ═══ -->
+    <div class="section-lbl">전처리</div>
+
+    <div class="card c-parse">
+      <div class="card-head">
+        <div class="icon">00</div>
+        <div class="info">
+          <h3>상품명 파싱 + 핵심 키워드 추출</h3>
+          <p>브랜드·모델번호·용량 제거 → 순수 한글 토큰만 추출</p>
+        </div>
+        <div class="tag">코드 로직</div>
+      </div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step"><div class="n">1</div>[대괄호] 판매자 브랜드 추출</div>
+          <div class="sa">→</div>
+          <div class="step"><div class="n">2</div>모델번호 제거 (KSG-77D 등)</div>
+          <div class="sa">→</div>
+          <div class="step"><div class="n">3</div>영문 브랜드명 제거</div>
+          <div class="sa">→</div>
+          <div class="step"><div class="n">4</div>용량/수량 제거 (800ml, 10개)</div>
+          <div class="sa">→</div>
+          <div class="step" style="border:1px solid #3a4a6a;"><div class="n">✓</div><b>2자+ 한글 토큰</b></div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:#6a7a9a;">
+          예) "[MBN] 메이빈 초경량 KSG-77D 자동차커버 800ml" → <span style="color:#fff;">["메이빈", "초경량", "자동차커버"]</span> + sellerBrand: <span style="color:#e070b0;">["mbn"]</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow" style="--c1:#2a3050;--c2:#5ac8ff;"><div class="line"></div><div class="head"></div></div>
+
+    <!-- ═══ Step 1: Gemini AI ═══ -->
+    <div class="section-lbl">AI 파이프라인</div>
+
+    <div class="card c-gem">
+      <div class="card-head">
+        <div class="icon">01</div>
+        <div class="info">
+          <h3>AI 키워드 창작</h3>
+          <p>상품명 + 핵심 토큰 힌트 → Gemini가 7개 카테고리별 키워드 자동 생성</p>
+        </div>
+        <div class="tag">Gemini 2.5 Flash</div>
+      </div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step"><div class="n">1</div>상품명 + 핵심 토큰 힌트 전달</div>
+          <div class="sa">→</div>
+          <div class="step"><div class="n">2</div>7개 카테고리 × 5~7개 생성</div>
+          <div class="sa">→</div>
+          <div class="step"><div class="n">3</div>핵심 토큰 후보에 합산</div>
+          <div class="sa">→</div>
+          <div class="step" style="border:1px solid #2a4a7a;"><div class="n">✓</div><b>~50~60개 후보</b></div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:#4a6a9a;">
+          카테고리: 정식명칭변형 / 기능효과 / 보호목적 / 구어체검색어 / 일반명칭 / 소재형태 / 용도시즌<br>
+          Fallback: gemini-2.5-flash → gemini-2.5-flash-lite (429/500 자동 전환)
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow" style="--c1:#1a3a6a;--c2:#e070b0;"><div class="line"></div><div class="head"></div></div>
+
+    <!-- ═══ Step 2: 로컬 필터 ═══ -->
+    <div class="card c-filter">
+      <div class="card-head">
+        <div class="icon">02</div>
+        <div class="info">
+          <h3>3중 필터링 (코드 레벨)</h3>
+          <p>광고성 금칙어 + IP 브랜드 900개+ + 판매자 브랜드 자동 제거</p>
+        </div>
+        <div class="tag">containsBanned()</div>
+      </div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step"><div class="n">1</div>광고성 금칙어 38개 (추천, 할인, 세일...)</div>
+          <div class="sa">→</div>
+          <div class="step"><div class="n">2</div>판매자 브랜드 ([MBN] → mbn 제거)</div>
+          <div class="sa">→</div>
+          <div class="step"><div class="n">3</div>IP 브랜드 900개+ (상품명에 있으면 허용)</div>
+        </div>
+        <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:4px;">
+          <span class="fb fb-r">삭제: 금칙어 (추천, 할인, 최저가...)</span>
+          <span class="fb fb-r">삭제: 판매자 브랜드 ([대괄호])</span>
+          <span class="fb fb-r">삭제: 타 브랜드 (소나타, 나이키...)</span>
+          <span class="fb fb-g">통과: 상품명 내 브랜드는 허용 (토레스 전용 → 토레스 OK)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow" style="--c1:#4a2040;--c2:#ffbb44;"><div class="line"></div><div class="head"></div><div class="lbl">필터 통과 키워드만</div></div>
+
+    <!-- ═══ Step 3: 네이버 검색량 ═══ -->
+    <div class="card c-naver">
+      <div class="card-head">
+        <div class="icon">03</div>
+        <div class="info">
+          <h3>네이버 검색량 확인 + KQS 채점</h3>
+          <p>검색광고 API → PC/모바일 분리 조회 → 볼륨 필터 → KQS 등급</p>
+        </div>
+        <div class="tag">Naver Search Ad API</div>
+      </div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step"><div class="n">1</div>캐시 조회 (Supabase DB)</div>
+          <div class="sa">→</div>
+          <div class="step"><div class="n">2</div>미캐시 → API 5개씩 배치</div>
+          <div class="sa">→</div>
+          <div class="step"><div class="n">3</div>"&lt; 10" → 0 처리</div>
+          <div class="sa">→</div>
+          <div class="step"><div class="n">4</div>볼륨 필터 적용</div>
+          <div class="sa">→</div>
+          <div class="step" style="border:1px solid #5a4a1a;"><div class="n">✓</div><b>검증된 키워드</b></div>
+        </div>
+        <div style="margin-top:10px;padding:12px;background:rgba(0,0,0,.3);border-radius:8px;font-size:11px;line-height:1.8;">
+          <b style="color:#ffbb44;">검색량 처리 로직:</b><br>
+          &nbsp;&nbsp;PC 검색량: <code>"&lt; 10"</code> → <b>0</b> &nbsp;|&nbsp; 숫자 → 그대로<br>
+          &nbsp;&nbsp;모바일 검색량: <code>"&lt; 10"</code> → <b>0</b> &nbsp;|&nbsp; 숫자 → 그대로<br>
+          &nbsp;&nbsp;합산: total = PC + 모바일<br><br>
+          <b style="color:#ffbb44;">볼륨 필터 (v16):</b><br>
+          &nbsp;&nbsp;<span style="color:#5affaa;">(PC ≥ 10 <b>OR</b> 모바일 ≥ 10)</span> <b>AND</b> <span style="color:#ffdd88;">총합 ≤ 5,000</span><br>
+          &nbsp;&nbsp;→ PC만 있거나 모바일만 있어도 통과 (v15까지는 AND)<br><br>
+          <b style="color:#ffbb44;">KQS 점수:</b> (검색량 × CTR × 2) ÷ (경쟁도 × 광고깊이)<br>
+          &nbsp;&nbsp;S(≥15) → A(≥6) → B(≥2) → C(≥0.5) → D
+        </div>
+        <div style="margin-top:8px;">
+          <span class="fb fb-g">캐시 히트 → API 호출 절약</span>
+          <span class="fb fb-y">search_count 누적 (인기 키워드 트래킹)</span>
+          <span class="fb fb-g">결과 자동 캐시 upsert</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow" style="--c1:#5a4a1a;--c2:#5affaa;"><div class="line"></div><div class="head"></div></div>
+
+    <!-- ═══ 모드 분기 ═══ -->
+    <div class="section-lbl">모드 분기</div>
+
+    <div class="mode-split">
+      <div class="mode-card mode-single">
+        <h4>📋 Single 모드</h4>
+        <div class="fl">
+          <b>Step 1</b> → Gemini 키워드 생성<br>
+          <b>Step 2</b> → 3중 필터<br>
+          <b>Step 3</b> → 네이버 검색량<br>
+          <b>이미지 검증 없음</b> (스킵)<br><br>
+          → 개별 상품 빠른 조회용<br>
+          → keywordsV2 (KQS 포함) 반환
+        </div>
+      </div>
+      <div class="mode-card mode-excel">
+        <h4>📊 Excel 모드</h4>
+        <div class="fl">
+          <b>Step 1</b> → Gemini 키워드 생성<br>
+          <b>Step 2</b> → 3중 필터<br>
+          <b>Step 3</b> → 네이버 검색량<br>
+          <b>Step 4</b> → <span style="color:#5affaa;">Vision AI 이미지 검증</span><br><br>
+          → 엑셀 일괄 처리용<br>
+          → keywords (레거시) + keywordsV2 반환
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow" style="--c1:#5affaa;--c2:#5affaa;"><div class="line"></div><div class="head"></div><div class="lbl">Excel 모드만</div></div>
+
+    <!-- ═══ Step 4: Vision AI ═══ -->
+    <div class="card c-vision">
+      <div class="card-head">
+        <div class="icon">04</div>
+        <div class="info">
+          <h3>이미지 검증 (Vision AI) — Excel 모드 전용</h3>
+          <p>상품 이미지 vs 키워드 매칭 → 관련 없는 키워드 최종 제거</p>
+        </div>
+        <div class="tag">Gemini Vision</div>
+      </div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step"><div class="n">1</div>이미지 URL → base64 (4MB 제한)</div>
+          <div class="sa">→</div>
+          <div class="step"><div class="n">2</div>키워드 vs 이미지 매칭 판정</div>
+          <div class="sa">→</div>
+          <div class="step"><div class="n">3</div>명백한 불일치만 제거</div>
+          <div class="sa">→</div>
+          <div class="step" style="border:1px solid #2a5a3a;"><div class="n">✓</div><b>최종 키워드</b></div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:#4a7a5a;">
+          10초 타임아웃 / 실패 시 Step 3 결과로 fallback / 애매한 것은 유지
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow" style="--c1:#1a5a3a;--c2:#b07aff;"><div class="line"></div><div class="head"></div></div>
+
+    <!-- ═══ KQS 결과 예시 ═══ -->
+    <div class="card c-kqs" style="padding:20px 24px;">
+      <h3 style="font-size:14px;font-weight:700;color:#b07aff;margin-bottom:6px;">KQS 등급 결과 예시</h3>
+      <div style="font-size:11px;color:#6a5a8a;margin-bottom:10px;">키워드별 검색량 + CTR + 경쟁도 + 광고깊이 → 종합 점수</div>
+      <div class="kqs-grid">
+        <div class="kqs-tag kqs-s">S 차량용커버 (2,400 / 16.2)</div>
+        <div class="kqs-tag kqs-a">A 자동차보호커버 (1,800 / 8.4)</div>
+        <div class="kqs-tag kqs-a">A 주차커버 (980 / 6.1)</div>
+        <div class="kqs-tag kqs-b">B 방염커버 (480 / 3.2)</div>
+        <div class="kqs-tag kqs-b">B 자동차덮개 (280 / 2.1)</div>
+        <div class="kqs-tag kqs-c">C 열차단커버 (120 / 0.8)</div>
+        <div class="kqs-tag kqs-c">C 방염덮개 (80 / 0.6)</div>
+        <div class="kqs-tag kqs-d">D 보호덮개 (30 / 0.2)</div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:14px;flex-wrap:wrap;font-size:10px;">
+        <span style="color:#5affaa;">■ S(≥15)</span>
+        <span style="color:#5ac8ff;">■ A(≥6)</span>
+        <span style="color:#ffdd88;">■ B(≥2)</span>
+        <span style="color:#ffaa66;">■ C(≥0.5)</span>
+        <span style="color:#ff7a7a;">■ D(&lt;0.5)</span>
+        <span style="color:#6a5a8a;">— 괄호: (검색량 / KQS점수)</span>
+      </div>
+    </div>
+
+    <div class="arrow" style="--c1:#3a1a6a;--c2:#5aaa3a;"><div class="line"></div><div class="head"></div></div>
+
+    <!-- ═══ 출력 ═══ -->
+    <div class="section-lbl">출력</div>
+
+    <div class="card c-out" style="padding:20px 24px;">
+      <h3 style="font-size:14px;font-weight:700;color:#8ab87a;margin-bottom:10px;">최종 결과 — 엑셀 다운로드</h3>
+      <div class="out-row">
+        <div class="out-card out-b">
+          <div class="ol">원본 (D열)</div>
+          <div class="txt">[MBN] 메이빈 초경량 숨쉬는 자동차커버</div>
+        </div>
+        <div class="out-card out-a">
+          <div class="ol">최적화 (D열 교체)</div>
+          <div class="txt">[MBN] 메이빈 초경량 숨쉬는 자동차커버 <span class="hl">차량용커버,보호덮개</span></div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:12px;background:#0d1a0d;border-radius:8px;font-size:11px;color:#6a9a5a;line-height:1.8;">
+        <b style="color:#8ab87a;">스마트 배분 — 같은 상품, 다른 키워드:</b><br>
+        행 1 → <span style="color:#5affaa;">차량용커버,보호덮개</span> (S+D 쌍)<br>
+        행 2 → <span style="color:#5affaa;">자동차보호커버,주차덮개</span> (A+C 쌍)<br>
+        행 3 → <span style="color:#5affaa;">주차커버,열차단덮개</span> (A+C 쌍)<br>
+        → 고등급+저등급 쌍으로 다양한 검색 유입 극대화
+      </div>
+    </div>
+
+    <!-- ═══ 아키텍처 ═══ -->
+    <div class="section-lbl" style="margin-top:36px;">시스템 아키텍처</div>
+
+    <div class="arch-grid">
+      <div class="arch" style="border-color:#1a3a6a;">
+        <h4 style="color:#5ac8ff;">Frontend</h4>
+        <div class="mono">
+          keyword-optimizer.html<br><br>
+          드래그&드롭 엑셀 업로드<br>
+          상품별 실시간 진행률<br>
+          KQS 등급 표시<br>
+          스마트 키워드 배분<br>
+          최적화 엑셀 다운로드
+        </div>
+      </div>
+      <div class="arch" style="border-color:#1a5a3a;">
+        <h4 style="color:#5affaa;">Backend</h4>
+        <div class="mono">
+          Supabase Edge Function<br>
+          keyword-tool v16<br><br>
+          Step 0: 상품명 파싱<br>
+          Step 1: Gemini 키워드 창작<br>
+          Step 2: 3중 필터<br>
+          Step 3: Naver API + KQS<br>
+          Step 4: Vision AI 이미지
+        </div>
+      </div>
+      <div class="arch" style="border-color:#3a1a6a;">
+        <h4 style="color:#b07aff;">Data Layer</h4>
+        <div class="mono">
+          Supabase PostgreSQL<br><br>
+          keyword_cache<br>
+          &nbsp;→ 검색량 캐시 (upsert)<br>
+          keyword_search_log<br>
+          &nbsp;→ 검색 이력 기록<br>
+          search_count<br>
+          &nbsp;→ 인기 키워드 누적
+        </div>
+      </div>
+    </div>
+
+    <!-- 범례 -->
+    <div class="legend">
+      <div class="legend-i"><div class="legend-d" style="background:#8a9abb;"></div>Step 0: 파싱</div>
+      <div class="legend-i"><div class="legend-d" style="background:#5ac8ff;"></div>Step 1: Gemini AI</div>
+      <div class="legend-i"><div class="legend-d" style="background:#e070b0;"></div>Step 2: 3중 필터</div>
+      <div class="legend-i"><div class="legend-d" style="background:#ffbb44;"></div>Step 3: Naver + KQS</div>
+      <div class="legend-i"><div class="legend-d" style="background:#5affaa;"></div>Step 4: Vision AI</div>
+      <div class="legend-i"><div class="legend-d" style="background:#b07aff;"></div>KQS 등급</div>
+    </div>
+
+    <div class="ver">v16 — 2026.04.21 | Supabase Edge Function | Gemini 2.5 Flash | Naver Ad API | (PC≥10 OR Mo≥10) AND Total≤5000</div>
+
+  </div>
+</div>
+</body>
+</html>

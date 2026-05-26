@@ -502,7 +502,7 @@ btnStart.addEventListener("click", async () => {
   const delay = (ms) => new Promise(r => setTimeout(r, ms));
   const MAX_RETRIES = 2;
   const RETRY_DELAY = 8000;
-  const CONCURRENCY = 20;  // 동시 20건 병렬 처리
+  const CONCURRENCY = 5;  // 동시 5건 병렬 처리 (BOOT_ERROR 방지)
 
   const excelMode = document.querySelector('input[name="excelMode"]:checked')?.value || "normal";
   log(`모드: ${excelMode === "fast" ? "⚡ 빠른 모드" : "🔍 정밀 모드"}`, "info");

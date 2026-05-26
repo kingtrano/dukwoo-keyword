@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>덕우무역 — 단계별 자동화 가능 범위</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;}
+
+  .header{text-align:center;padding:48px 24px 16px;}
+  .header h1{font-size:26px;font-weight:800;color:#f8fafc;margin-bottom:6px;}
+  .header p{color:#64748b;font-size:13px;}
+
+  .container{max-width:900px;margin:0 auto;padding:24px;}
+
+  /* ── STAGE CARD ── */
+  .stage{margin-bottom:40px;}
+  .stage-header{
+    display:flex;align-items:center;gap:14px;
+    padding:18px 24px;border-radius:14px 14px 0 0;
+  }
+  .stage-header .num{
+    width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:20px;font-weight:800;color:#fff;flex-shrink:0;
+  }
+  .stage-header .info h2{font-size:20px;font-weight:700;color:#f8fafc;}
+  .stage-header .info p{font-size:13px;color:#94a3b8;margin-top:2px;}
+
+  .stage-body{
+    background:#1e293b;border:1px solid #334155;border-top:none;
+    border-radius:0 0 14px 14px;overflow:hidden;
+  }
+
+  /* stage colors */
+  .stage-1 .stage-header{background:linear-gradient(135deg,#1e3a5f,#1e293b);border:1px solid #2563eb33;}
+  .stage-1 .num{background:#2563eb;}
+  .stage-2 .stage-header{background:linear-gradient(135deg,#1a3a2a,#1e293b);border:1px solid #16a34a33;}
+  .stage-2 .num{background:#16a34a;}
+  .stage-3 .stage-header{background:linear-gradient(135deg,#3b2a1a,#1e293b);border:1px solid #d9770633;}
+  .stage-3 .num{background:#d97706;}
+  .stage-4 .stage-header{background:linear-gradient(135deg,#2d1a3a,#1e293b);border:1px solid #9333ea33;}
+  .stage-4 .num{background:#9333ea;}
+
+  /* ── TASK ROW ── */
+  .task-row{
+    display:grid;grid-template-columns:180px 1fr 1fr 100px;
+    border-bottom:1px solid #0f172a;
+  }
+  .task-row:last-child{border-bottom:none;}
+  .task-row.header-row{background:#0f172a;}
+  .task-row.header-row .cell{font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:#64748b;font-weight:600;padding:10px 16px;}
+
+  .cell{padding:14px 16px;font-size:13px;line-height:1.6;display:flex;flex-direction:column;justify-content:center;}
+  .cell:not(:last-child){border-right:1px solid #0f172a22;}
+
+  .task-name{font-weight:600;color:#f8fafc;font-size:14px;}
+  .task-sub{font-size:12px;color:#64748b;margin-top:2px;}
+
+  .now{color:#fca5a5;}
+  .now .method{font-weight:600;}
+  .now .detail{font-size:12px;color:#f8717188;margin-top:2px;}
+
+  .future{color:#86efac;}
+  .future .method{font-weight:600;}
+  .future .detail{font-size:12px;color:#4ade8088;margin-top:2px;}
+  .future.partial{color:#fde68a;}
+  .future.partial .detail{color:#fbbf2488;}
+  .future.none{color:#94a3b8;}
+  .future.none .detail{color:#64748b;}
+
+  /* verdict badge */
+  .badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    padding:4px 0;border-radius:6px;font-size:11px;font-weight:700;
+    width:80px;text-align:center;
+  }
+  .badge.auto{background:rgba(34,197,94,0.15);color:#4ade80;}
+  .badge.half{background:rgba(250,204,21,0.15);color:#fbbf24;}
+  .badge.manual{background:rgba(239,68,68,0.15);color:#f87171;}
+  .badge.keep{background:rgba(148,163,184,0.1);color:#94a3b8;}
+
+  /* ── BOTTOM SUMMARY ── */
+  .summary-box{
+    background:#1e293b;border:1px solid #334155;border-radius:14px;
+    padding:28px;margin-top:16px;
+  }
+  .summary-box h3{font-size:16px;font-weight:700;color:#f8fafc;margin-bottom:16px;}
+  .legend{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:13px;color:#94a3b8;}
+  .legend-dot{width:12px;height:12px;border-radius:4px;}
+
+  .key-q{
+    background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);
+    border-radius:10px;padding:16px 20px;margin-top:16px;
+  }
+  .key-q strong{color:#60a5fa;font-size:14px;}
+  .key-q p{color:#cbd5e1;font-size:13px;margin-top:6px;line-height:1.6;}
+
+  .footer{text-align:center;padding:32px;color:#475569;font-size:11px;border-top:1px solid #1e293b;margin-top:24px;}
+
+  @media(max-width:768px){
+    .task-row{grid-template-columns:1fr;gap:0;}
+    .cell{border-right:none!important;border-bottom:1px solid #0f172a22;padding:10px 16px;}
+    .task-row.header-row{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>덕우무역 네이버 자동화 — 단계별 정리</h1>
+  <p>각 단계에서 뭐가 수동이고, 뭘 자동화할 수 있는지</p>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════════════════════════ -->
+<!-- STAGE 1: 상품 만들기 -->
+<!-- ════════════════════════════════════════ -->
+<div class="stage stage-1">
+  <div class="stage-header">
+    <div class="num">1</div>
+    <div class="info">
+      <h2>상품 만들기</h2>
+      <p>도매처에서 가져와서 네이버에 올릴 수 있는 상태로 가공</p>
+    </div>
+  </div>
+  <div class="stage-body">
+    <div class="task-row header-row">
+      <div class="cell">작업</div>
+      <div class="cell">지금 (Before)</div>
+      <div class="cell">자동화 (After)</div>
+      <div class="cell">판정</div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">도매처 크롤링</span><span class="task-sub">51곳, 197만 SKU</span></div>
+      <div class="cell now"><span class="method">유플랫 자동</span><span class="detail">월 79.8만원, 자동 크롤링+재고연동+가격변동 반영</span></div>
+      <div class="cell future none"><span class="method">그대로 유지</span><span class="detail">51곳 크롤링을 직접 만드는 건 비현실적. 유플랫이 하는 게 맞음.</span></div>
+      <div class="cell"><span class="badge keep">유지</span></div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">카테고리 매핑</span><span class="task-sub">도매처 → 네이버 카테고리</span></div>
+      <div class="cell now"><span class="method">자체 프로그램 (자동 90%)</span><span class="detail">네이버 API 사용, 나머지 10% 수동</span></div>
+      <div class="cell future none"><span class="method">그대로 유지</span><span class="detail">이미 90% 자동. 10%를 LLM으로 올릴 수 있으나 효과 미미.</span></div>
+      <div class="cell"><span class="badge keep">유지</span></div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">상품명 수정</span><span class="task-sub">검색 최적화 상품명 생성</span></div>
+      <div class="cell now"><span class="method">GPT/Gemini API 건별 호출</span><span class="detail">자체 프로그램으로 하나씩 호출. 비용 건당 ~2-3원.</span></div>
+      <div class="cell future"><span class="method">배치 API로 전환</span><span class="detail">동일 품질, API 비용 50% 절감. 코드 수정만으로 적용.</span></div>
+      <div class="cell"><span class="badge auto">자동화</span></div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">키워드 선정</span><span class="task-sub">1~40개 키워드 세팅</span></div>
+      <div class="cell now"><span class="method">자체 프로그램 + 수동 입력</span><span class="detail">네이버광고 API로 키워드 조합은 반자동. 유플랫에 세팅은 수동.</span></div>
+      <div class="cell future partial"><span class="method">조합 자동화, 입력은 수동</span><span class="detail">추천 키워드 자동 생성+순위화 가능. 유플랫에 넣는 건 사람이 해야 함.</span></div>
+      <div class="cell"><span class="badge half">반자동</span></div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">이미지 가공</span><span class="task-sub">리사이즈 + 워터마크</span></div>
+      <div class="cell now"><span class="method">알바가 캡처툴로 수동</span><span class="detail">건당 50원. 상세페이지는 도매처 원본 그대로.</span></div>
+      <div class="cell future"><span class="method">Python Pillow 완전 자동</span><span class="detail">리사이즈+워터마크 일괄 처리. 비용 거의 0원. 바로 적용 가능.</span></div>
+      <div class="cell"><span class="badge auto">자동화</span></div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">속성값 입력</span><span class="task-sub">색상, 사이즈, 재질 등</span></div>
+      <div class="cell now"><span class="method">알바가 유플랫에서 수동 입력</span><span class="detail">건당 80~100원. 가장 큰 비용.</span></div>
+      <div class="cell future partial"><span class="method">LLM이 추출, 입력은 수동</span><span class="detail">상품 설명에서 속성값 자동 추출 → 엑셀 생성까지 자동. 유플랫에 넣는 건 수동. 복붙이라 시간은 줄어듦.</span></div>
+      <div class="cell"><span class="badge half">반자동</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- STAGE 2: 등록하기 -->
+<!-- ════════════════════════════════════════ -->
+<div class="stage stage-2">
+  <div class="stage-header">
+    <div class="num">2</div>
+    <div class="info">
+      <h2>등록하기</h2>
+      <p>가공 완료된 상품을 네이버 스마트스토어에 올리기</p>
+    </div>
+  </div>
+  <div class="stage-body">
+    <div class="task-row header-row">
+      <div class="cell">작업</div>
+      <div class="cell">지금 (Before)</div>
+      <div class="cell">자동화 (After)</div>
+      <div class="cell">판정</div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">네이버 등록</span><span class="task-sub">건당 4~5초, 일 2만건</span></div>
+      <div class="cell now"><span class="method">유플랫 반자동</span><span class="detail">카테고리 매칭 후 바로 등록. 이미 빠름.</span></div>
+      <div class="cell future none"><span class="method">그대로 유지</span><span class="detail">4~5초/건이면 충분히 빠름. 건드릴 이유 없음.</span></div>
+      <div class="cell"><span class="badge keep">유지</span></div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">재고 연동</span><span class="task-sub">도매처 재고 실시간 반영</span></div>
+      <div class="cell now"><span class="method">유플랫 자동 크롤링</span><span class="detail">도매처 재고 변동 자동 반영.</span></div>
+      <div class="cell future none"><span class="method">그대로 유지</span><span class="detail">유플랫이 잘 하고 있음. 직접 구현하면 51곳 각각 대응 필요.</span></div>
+      <div class="cell"><span class="badge keep">유지</span></div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">가격 변동 반영</span><span class="task-sub">매일 발생</span></div>
+      <div class="cell now"><span class="method">유플랫 자동 크롤링</span><span class="detail">매일 도매처 가격 변동 자동 반영.</span></div>
+      <div class="cell future none"><span class="method">그대로 유지</span><span class="detail">동일. 유플랫 역할.</span></div>
+      <div class="cell"><span class="badge keep">유지</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- STAGE 3: 관리하기 -->
+<!-- ════════════════════════════════════════ -->
+<div class="stage stage-3">
+  <div class="stage-header">
+    <div class="num">3</div>
+    <div class="info">
+      <h2>관리하기</h2>
+      <p>등록된 상품의 성과 분석, 순환(올리고 내리기), 주문/정산</p>
+    </div>
+  </div>
+  <div class="stage-body">
+    <div class="task-row header-row">
+      <div class="cell">작업</div>
+      <div class="cell">지금 (Before)</div>
+      <div class="cell">자동화 (After)</div>
+      <div class="cell">판정</div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">판매 데이터 분석</span><span class="task-sub">CTR, 전환율, 키워드</span></div>
+      <div class="cell now"><span class="method">매출만 확인 (수동)</span><span class="detail">샵마인→구글시트. 클릭률/전환율/키워드 미분석.</span></div>
+      <div class="cell future"><span class="method">자동 대시보드</span><span class="detail">네이버 API로 일별 자동 수집 → 구글시트 대시보드. 안형선 이사도 계획 중이던 것.</span></div>
+      <div class="cell"><span class="badge auto">자동화</span></div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">상품 순환 판단</span><span class="task-sub">내릴 상품 / 올릴 상품</span></div>
+      <div class="cell now"><span class="method">등급 변화 시 수동 판단</span><span class="detail">기준이 정성적. 데이터 근거 부족.</span></div>
+      <div class="cell future partial"><span class="method">스코어링으로 추천 리스트</span><span class="detail">대시보드 데이터 기반 후보 자동 생성. 최종 결정과 실행(등록/삭제)은 사람이.</span></div>
+      <div class="cell"><span class="badge half">반자동</span></div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">키워드 성과 추적</span><span class="task-sub">어떤 키워드가 잘 되나</span></div>
+      <div class="cell now"><span class="method">미분석</span><span class="detail">키워드별 성과 데이터 수집 안 함.</span></div>
+      <div class="cell future"><span class="method">자동 수집 + 피드백</span><span class="detail">어떤 키워드가 클릭/전환 높은지 자동 추적. 키워드 교체 추천.</span></div>
+      <div class="cell"><span class="badge auto">자동화</span></div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">주문 확인 / 발주</span><span class="task-sub">일 100건</span></div>
+      <div class="cell now"><span class="method">유플랫(UOS) 자동</span><span class="detail">주문 확인, 발주, 배송, 송장 등록 모두 UOS 처리.</span></div>
+      <div class="cell future none"><span class="method">그대로 유지</span><span class="detail">이미 자동화되어 있음.</span></div>
+      <div class="cell"><span class="badge keep">유지</span></div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">정산 확인</span><span class="task-sub">일반 + 빠른정산</span></div>
+      <div class="cell now"><span class="method">샵마인 통계 확인</span><span class="detail">일반정산(8일 후) + 빠른정산(익일). 수동 확인.</span></div>
+      <div class="cell future none"><span class="method">그대로 유지</span><span class="detail">대시보드에 정산 데이터 포함시킬 수 있으나, 핵심 병목 아님.</span></div>
+      <div class="cell"><span class="badge keep">유지</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- STAGE 4: CS -->
+<!-- ════════════════════════════════════════ -->
+<div class="stage stage-4">
+  <div class="stage-header">
+    <div class="num">4</div>
+    <div class="info">
+      <h2>CS 하기</h2>
+      <p>고객 문의 응대, 반품/교환 처리</p>
+    </div>
+  </div>
+  <div class="stage-body">
+    <div class="task-row header-row">
+      <div class="cell">작업</div>
+      <div class="cell">지금 (Before)</div>
+      <div class="cell">자동화 (After)</div>
+      <div class="cell">판정</div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">고객 문의 응대</span><span class="task-sub">상품/재고/발송 문의</span></div>
+      <div class="cell now"><span class="method">2명이 수동, 템플릿 있음</span><span class="detail">김수인+김자헌. 10건/일. 샵마인/문자/전화.</span></div>
+      <div class="cell future none"><span class="method">현행 유지 권장</span><span class="detail">하루 10건에 AI 시스템 구축은 과잉. 기존 템플릿으로 충분. 볼륨이 50건+ 넘으면 재검토.</span></div>
+      <div class="cell"><span class="badge keep">유지</span></div>
+    </div>
+
+    <div class="task-row">
+      <div class="cell"><span class="task-name">반품/교환</span><span class="task-sub">도매처별 절차 상이</span></div>
+      <div class="cell now"><span class="method">건별 수동 처리</span><span class="detail">도매처마다 접수방법 다름. 1~2주 소요.</span></div>
+      <div class="cell future none"><span class="method">현행 유지</span><span class="detail">도매처 절차 DB는 만들 수 있지만, 반품 자체가 전화/문자로 처리되므로 자동화 효과 제한적.</span></div>
+      <div class="cell"><span class="badge keep">유지</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- SUMMARY -->
+<!-- ════════════════════════════════════════ -->
+<div class="summary-box">
+  <h3>전체 요약</h3>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div> 자동화 가능 (4건)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#eab308;"></div> 반만 가능 (3건)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#64748b;"></div> 현행 유지 (6건)</div>
+  </div>
+  <table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <tr style="border-bottom:1px solid #334155;">
+      <td style="padding:10px 0;color:#4ade80;font-weight:600;">✅ 바로 하면 되는 것</td>
+      <td style="padding:10px 0;color:#cbd5e1;">이미지 자동 가공, 상품명 배치 전환, 판매 대시보드, 키워드 성과 추적</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155;">
+      <td style="padding:10px 0;color:#fbbf24;font-weight:600;">⚡ 반만 되는 것</td>
+      <td style="padding:10px 0;color:#cbd5e1;">키워드 선정, 속성값 추출, 순환 판단 — 생성은 자동, 유플랫 입력은 수동</td>
+    </tr>
+    <tr>
+      <td style="padding:10px 0;color:#94a3b8;font-weight:600;">— 건드릴 필요 없는 것</td>
+      <td style="padding:10px 0;color:#cbd5e1;">크롤링, 카테고리(90%), 등록, 재고, 가격, 주문/발주, 정산, CS, 반품</td>
+    </tr>
+  </table>
+
+  <div class="key-q">
+    <strong>🔑 이 한 가지를 확인하면 "반만"이 "완전"으로 바뀔 수 있음</strong>
+    <p>안형선 이사에게: <strong>"유플랫에 엑셀로 상품 데이터를 대량 업로드(임포트)할 수 있습니까?"</strong><br>
+    → 된다면: 속성값/키워드를 자동 생성 → 엑셀로 만들어서 → 유플랫에 한번에 올리기 가능<br>
+    → 안 된다면: 생성은 자동이지만 입력은 사람이 하나씩 해야 함</p>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">BRIGHTEN PTE. LTD. — CONFIDENTIAL — 2026년 4월</div>
+</body>
+</html>

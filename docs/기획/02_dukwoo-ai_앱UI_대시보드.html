@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KeywordForge — 네이버 키워드 최적화</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0f;--bg2:#0f172a;--bg3:#1e293b;--bg4:#334155;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--orange:#f97316;--orange2:#ea580c;--orange3:#fb923c;--green:#22c55e;--blue:#3b82f6;--red:#ef4444;--gold:#eab308;--purple:#a855f7;--radius:12px;--radius2:8px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{color:var(--orange);text-decoration:none;cursor:pointer}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+input{font-family:inherit;outline:none}
+.hide{display:none!important}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(10,10,15,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:18px;font-weight:800;color:#fff;cursor:pointer}
+.nav-logo span{color:var(--orange)}
+.nav-links{display:flex;gap:6px;align-items:center}
+.nav-links button,.nav-user button{padding:7px 14px;border-radius:var(--radius2);font-size:13px;font-weight:600;background:transparent;color:var(--text2);transition:.2s}
+.nav-links button:hover,.nav-user button:hover{color:#fff;background:rgba(255,255,255,.06)}
+.btn-primary{background:var(--orange)!important;color:#fff!important}
+.btn-outline{border:1px solid var(--bg4)!important;color:var(--text)!important}
+.nav-user{display:flex;align-items:center;gap:4px}
+.nav-user button.active{color:var(--orange);background:rgba(249,115,22,.1)}
+.nav-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;margin-left:8px}
+
+/* PAGES */
+.page{display:none;min-height:100vh;padding-top:56px}
+.page.active{display:block}
+
+/* AUTH */
+.auth-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:60px 20px}
+.auth-box{width:100%;max-width:400px;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:36px}
+.auth-box h2{font-size:22px;font-weight:800;text-align:center;margin-bottom:6px}
+.auth-box .sub{text-align:center;color:var(--text2);font-size:13px;margin-bottom:24px}
+.trial-badge{text-align:center;padding:8px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:var(--radius2);font-size:12px;color:var(--green);margin-bottom:14px}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text2)}
+.form-group input{width:100%;padding:9px 12px;border-radius:var(--radius2);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#fff;font-size:14px;transition:.2s}
+.form-group input:focus{border-color:var(--orange)}
+.btn-submit{width:100%;padding:11px;border-radius:var(--radius2);background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;font-size:14px;font-weight:700;margin-top:6px;transition:.2s}
+.btn-submit:hover{opacity:.9}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+.auth-footer{text-align:center;margin-top:14px;font-size:12px;color:var(--text3)}
+.auth-error{padding:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius2);color:var(--red);font-size:12px;margin-bottom:10px;text-align:center;display:none}
+
+/* DASHBOARD */
+.dash{padding:20px;max-width:1100px;margin:0 auto}
+.dash h1{font-size:22px;font-weight:800;margin-bottom:4px}
+.dash .sub-h{color:var(--text2);font-size:13px;margin-bottom:18px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px}
+.stat-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:16px}
+.stat-card .label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.stat-card .value{font-size:26px;font-weight:800;margin:2px 0}
+.stat-card .change{font-size:11px;font-weight:600}
+
+/* TOOL */
+.tool{padding:20px;max-width:1000px;margin:0 auto}
+.tool h1{font-size:22px;font-weight:800;margin-bottom:4px}
+.tool .sub-h{color:var(--text2);font-size:13px;margin-bottom:16px}
+.tool-search{display:flex;gap:8px;margin-bottom:16px}
+.tool-search input{flex:1;padding:11px 14px;border-radius:var(--radius2);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#fff;font-size:14px}
+.tool-search input:focus{border-color:var(--orange)}
+.tool-search button{padding:11px 24px;border-radius:var(--radius2);background:var(--orange);color:#fff;font-weight:700;font-size:14px;white-space:nowrap}
+.tool-search button:disabled{opacity:.5;cursor:not-allowed}
+.tool-status{padding:10px;background:rgba(255,255,255,.02);border-radius:var(--radius2);font-size:13px;color:var(--text2);margin-bottom:14px;display:none}
+
+/* RESULTS */
+.result-summary{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.result-chip{padding:6px 12px;border-radius:16px;font-size:12px;font-weight:600;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+.results-table{width:100%;border-collapse:collapse}
+.results-table th{text-align:left;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06)}
+.results-table td{padding:8px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.03)}
+.grade-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;font-size:11px;font-weight:800}
+.grade-S{background:linear-gradient(135deg,#eab308,#f59e0b);color:#000}
+.grade-A{background:rgba(34,197,94,.15);color:#22c55e}
+.grade-B{background:rgba(59,130,246,.15);color:#3b82f6}
+.grade-C{background:rgba(148,163,184,.15);color:#94a3b8}
+.grade-D{background:rgba(100,116,139,.1);color:#64748b}
+.comp-high{color:var(--red)}.comp-mid{color:var(--gold)}.comp-low{color:var(--green)}
+.tag{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600}
+.tag-S{background:rgba(234,179,8,.15);color:var(--gold)}
+.tag-A{background:rgba(34,197,94,.15);color:var(--green)}
+.tag-B{background:rgba(59,130,246,.15);color:var(--blue)}
+.tag-C{background:rgba(148,163,184,.1);color:var(--text2)}
+.tag-D{background:rgba(100,116,139,.08);color:var(--text3)}
+
+/* USAGE BAR */
+.usage-bar{margin:14px 0}
+.usage-info{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:4px}
+.gauge{height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+.gauge-fill{height:100%;background:linear-gradient(90deg,var(--orange),var(--orange2));border-radius:4px;transition:.5s}
+
+/* PANEL */
+.panel{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.panel h3{font-size:14px;font-weight:700;margin-bottom:10px}
+
+/* ADMIN */
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:768px){.admin-grid{grid-template-columns:1fr}.stats-row{grid-template-columns:1fr 1fr}}
+.admin-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+.admin-row .lbl{color:var(--text2)}
+.admin-row .v{font-weight:600}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:var(--radius2);font-size:13px;font-weight:600;z-index:9999;transform:translateY(100px);opacity:0;transition:.3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:rgba(34,197,94,.9);color:#fff}
+.toast.error{background:rgba(239,68,68,.9);color:#fff}
+
+/* LOADING */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{position:fixed;inset:0;background:rgba(10,10,15,.8);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:12px;color:var(--text2);font-size:14px}
+.loading-overlay .spinner{width:32px;height:32px;border-width:3px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo" onclick="goto('landing')">🔥 Keyword<span>Forge</span></div>
+  <div class="nav-links" id="guestNav">
+    <button class="btn-outline" onclick="goto('login')">로그인</button>
+    <button class="btn-primary" onclick="goto('signup')">시작하기</button>
+  </div>
+  <div class="nav-user hide" id="userNav">
+    <button onclick="goto('dashboard')" id="nDash">대시보드</button>
+    <button onclick="goto('tool')" id="nTool">키워드 분석</button>
+    <button onclick="goto('admin')" id="nAdmin" class="hide" style="color:var(--purple)">관리자</button>
+    <div class="nav-avatar" id="navAvatar" onclick="doLogout()" title="로그아웃">?</div>
+  </div>
+</nav>
+
+<!-- LANDING -->
+<div class="page active" id="page-landing">
+  <div style="text-align:center;padding:100px 20px 60px;position:relative">
+    <div style="position:absolute;top:-150px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(249,115,22,.1) 0%,transparent 70%);pointer-events:none"></div>
+    <div style="display:inline-flex;padding:5px 14px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.2);border-radius:16px;font-size:12px;color:var(--orange3);margin-bottom:20px">네이버 키워드 최적화 SaaS</div>
+    <h1 style="font-size:clamp(32px,5vw,56px);font-weight:900;line-height:1.15;margin-bottom:16px;background:linear-gradient(135deg,#fff 30%,var(--orange3));-webkit-background-clip:text;-webkit-text-fill-color:transparent">키워드 하나로<br>매출이 바뀝니다</h1>
+    <p style="font-size:16px;color:var(--text2);max-width:500px;margin:0 auto 32px">AI 기반 키워드 분석으로 네이버 스마트스토어 상위 노출. 수작업 30시간을 5분으로.</p>
+    <button class="btn-primary" style="padding:13px 28px;border-radius:var(--radius);font-size:15px;font-weight:700;box-shadow:0 4px 20px rgba(249,115,22,.3)" onclick="goto('signup')">무료 체험 시작 →</button>
+    <div style="display:flex;justify-content:center;gap:40px;margin-top:48px;flex-wrap:wrap">
+      <div style="text-align:center"><strong style="font-size:28px;font-weight:800;color:#fff">5분</strong><br><span style="font-size:12px;color:var(--text3)">분석 완료</span></div>
+      <div style="text-align:center"><strong style="font-size:28px;font-weight:800;color:#fff">96%</strong><br><span style="font-size:12px;color:var(--text3)">정확도</span></div>
+      <div style="text-align:center"><strong style="font-size:28px;font-weight:800;color:#fff">10x</strong><br><span style="font-size:12px;color:var(--text3)">ROI</span></div>
+    </div>
+  </div>
+  <div style="padding:40px 20px;text-align:center;background:linear-gradient(180deg,transparent,rgba(249,115,22,.04))">
+    <p style="color:var(--text3);font-size:12px">© 2026 KeywordForge by BRIGHTEN PTE. LTD.</p>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div class="page" id="page-signup">
+  <div class="auth-wrap">
+    <div class="auth-box">
+      <h2>회원가입</h2>
+      <p class="sub">이메일로 가입하세요</p>
+      <div class="trial-badge">🎉 Starter 플랜 — 월 300회 분석</div>
+      <div class="auth-error" id="signupError"></div>
+      <div class="form-group"><label>이메일</label><input type="email" placeholder="you@example.com" id="sEmail"></div>
+      <div class="form-group"><label>비밀번호</label><input type="password" placeholder="8자 이상" id="sPw"></div>
+      <div class="form-group"><label>스토어 이름 (선택)</label><input type="text" placeholder="내 스마트스토어" id="sStore"></div>
+      <button class="btn-submit" id="signupBtn" onclick="doSignup()">가입하기</button>
+      <p class="auth-footer">이미 계정이 있으신가요? <a onclick="goto('login')">로그인</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="page" id="page-login">
+  <div class="auth-wrap">
+    <div class="auth-box">
+      <h2>로그인</h2>
+      <p class="sub">계정에 로그인하세요</p>
+      <div class="auth-error" id="loginError"></div>
+      <div class="form-group"><label>이메일</label><input type="email" placeholder="you@example.com" id="lEmail"></div>
+      <div class="form-group"><label>비밀번호</label><input type="password" placeholder="비밀번호" id="lPw"></div>
+      <button class="btn-submit" id="loginBtn" onclick="doLogin()">로그인</button>
+      <p class="auth-footer">계정이 없으신가요? <a onclick="goto('signup')">회원가입</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page" id="page-dashboard">
+  <div class="dash">
+    <h1 id="dashGreeting">안녕하세요 👋</h1>
+    <p class="sub-h">키워드 분석 현황을 확인하세요</p>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="label">이번 달 분석</div><div class="value" id="statUsed" style="color:var(--orange)">-</div></div>
+      <div class="stat-card"><div class="label">잔여 횟수</div><div class="value" id="statRemain">-</div></div>
+      <div class="stat-card"><div class="label">내 플랜</div><div class="value" id="statPlan" style="font-size:20px">-</div></div>
+      <div class="stat-card"><div class="label">캐시 키워드</div><div class="value" id="statCache">-</div></div>
+    </div>
+
+    <div class="usage-bar">
+      <div class="usage-info"><span>사용량</span><span id="usageText">0 / 300</span></div>
+      <div class="gauge"><div class="gauge-fill" id="usageFill" style="width:0%"></div></div>
+    </div>
+
+    <div class="panel">
+      <h3>빠른 검색</h3>
+      <div class="tool-search">
+        <input type="text" placeholder="키워드 입력 후 Enter..." id="dashQuick" onkeydown="if(event.key==='Enter'){goto('tool');document.getElementById('toolInput').value=this.value;}">
+        <button onclick="goto('tool');document.getElementById('toolInput').value=document.getElementById('dashQuick').value;">분석</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KEYWORD TOOL -->
+<div class="page" id="page-tool">
+  <div class="tool">
+    <h1>키워드 분석</h1>
+    <p class="sub-h">상품 키워드를 입력하고 KQS 등급을 확인하세요</p>
+
+    <div class="tool-search">
+      <input type="text" placeholder="분석할 키워드 입력 (예: 블루투스 이어폰)" id="toolInput" onkeydown="if(event.key==='Enter')runAnalysis()">
+      <button id="analyzeBtn" onclick="runAnalysis()">🔍 분석</button>
+    </div>
+
+    <div class="tool-status" id="toolStatus"></div>
+
+    <div id="resultArea"></div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="page" id="page-admin">
+  <div style="padding:20px;max-width:1100px;margin:0 auto">
+    <h1 style="font-size:22px;font-weight:800;margin-bottom:16px">🛡 관리자 패널</h1>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="label">전체 유저</div><div class="value" id="adminUsers">-</div></div>
+      <div class="stat-card"><div class="label">캐시 키워드</div><div class="value" id="adminCache">-</div></div>
+      <div class="stat-card"><div class="label">검색 로그</div><div class="value" id="adminLogs">-</div></div>
+    </div>
+
+    <div class="admin-grid">
+      <div class="panel">
+        <h3>유저 목록</h3>
+        <div id="adminUserList" style="font-size:13px;color:var(--text2)">로딩 중...</div>
+      </div>
+      <div class="panel">
+        <h3>시스템 상태</h3>
+        <div class="admin-row"><span class="lbl">Edge Function</span><span class="v" style="color:var(--green)">✅ v11</span></div>
+        <div class="admin-row"><span class="lbl">keyword-refresh</span><span class="v" style="color:var(--green)">✅ v2</span></div>
+        <div class="admin-row"><span class="lbl">RLS</span><span class="v" style="color:var(--green)">✅ 활성화</span></div>
+        <div class="admin-row"><span class="lbl">JWT 인증</span><span class="v" style="color:var(--green)">✅ 필수</span></div>
+        <div class="admin-row"><span class="lbl">레이트 리밋</span><span class="v">5회/분</span></div>
+        <div class="admin-row"><span class="lbl">입력 검증</span><span class="v">2~50자, 한글/영문</span></div>
+        <h3 style="margin-top:14px">유저 추가 (초대제)</h3>
+        <div class="form-group"><label>이메일</label><input type="email" id="inviteEmail" placeholder="seller@example.com"></div>
+        <div class="form-group"><label>비밀번호</label><input type="text" id="invitePw" placeholder="초기 비밀번호"></div>
+        <button class="btn-submit" style="font-size:13px;padding:8px" onclick="inviteUser()">유저 추가</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- LOADING -->
+<div class="loading-overlay hide" id="loadingOverlay">
+  <div class="spinner"></div>
+  <span id="loadingText">로딩 중...</span>
+</div>
+
+<script>
+// ─── Supabase 초기화 ───
+const SUPA_URL = 'https://uifjabklkmvfbsplvxsu.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpZmphYmtsa212ZmJzcGx2eHN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNDMwOTEsImV4cCI6MjA4OTcxOTA5MX0.1_rWJ0RDk_KXw86ewRq-F9DKIj6D7oaCzRWlrImzu2M';
+const supabase = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let currentUser = null;
+let currentProfile = null;
+let currentPage = 'landing';
+
+// ─── Auth State ───
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    currentUser = session.user;
+    const { data } = await supabase.from('kf_profiles').select('*').eq('id', session.user.id).single();
+    currentProfile = data;
+    updateNav(true);
+    if (currentPage === 'landing' || currentPage === 'login' || currentPage === 'signup') {
+      goto('dashboard');
+    }
+    loadDashboard();
+  } else {
+    currentUser = null;
+    currentProfile = null;
+    updateNav(false);
+    if (!['landing','login','signup'].includes(currentPage)) goto('landing');
+  }
+});
+
+// ─── Navigation ───
+function goto(page) {
+  if (['dashboard','tool','admin'].includes(page) && !currentUser) { page = 'login'; }
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('page-' + page);
+  if (el) { el.classList.add('active'); currentPage = page; }
+  // Active nav
+  ['nDash','nTool','nAdmin'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+  const map = { dashboard:'nDash', tool:'nTool', admin:'nAdmin' };
+  if (map[page]) document.getElementById(map[page])?.classList.add('active');
+  window.scrollTo(0, 0);
+  if (page === 'admin' && currentProfile?.is_admin) loadAdmin();
+}
+
+function updateNav(loggedIn) {
+  document.getElementById('guestNav').classList.toggle('hide', loggedIn);
+  document.getElementById('userNav').classList.toggle('hide', !loggedIn);
+  if (loggedIn && currentUser) {
+    const initial = (currentUser.email || '?')[0].toUpperCase();
+    document.getElementById('navAvatar').textContent = initial;
+    // Admin nav
+    document.getElementById('nAdmin').classList.toggle('hide', !currentProfile?.is_admin);
+  }
+}
+
+// ─── Auth Actions ───
+async function doSignup() {
+  const email = document.getElementById('sEmail').value.trim();
+  const pw = document.getElementById('sPw').value;
+  const store = document.getElementById('sStore').value.trim();
+  const errEl = document.getElementById('signupError');
+  const btn = document.getElementById('signupBtn');
+
+  if (!email || !pw) { showAuthError(errEl, '이메일과 비밀번호를 입력해주세요.'); return; }
+  if (pw.length < 8) { showAuthError(errEl, '비밀번호는 8자 이상이어야 합니다.'); return; }
+
+  btn.disabled = true; btn.textContent = '가입 중...';
+  const { data, error } = await supabase.auth.signUp({
+    email, password: pw,
+    options: { data: { store_name: store, plan: 'starter' } }
+  });
+  btn.disabled = false; btn.textContent = '가입하기';
+
+  if (error) { showAuthError(errEl, error.message); return; }
+  toast('가입 완료! 대시보드로 이동합니다.', 'success');
+}
+
+async function doLogin() {
+  const email = document.getElementById('lEmail').value.trim();
+  const pw = document.getElementById('lPw').value;
+  const errEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+
+  if (!email || !pw) { showAuthError(errEl, '이메일과 비밀번호를 입력해주세요.'); return; }
+
+  btn.disabled = true; btn.textContent = '로그인 중...';
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: pw });
+  btn.disabled = false; btn.textContent = '로그인';
+
+  if (error) { showAuthError(errEl, error.message === 'Invalid login credentials' ? '이메일 또는 비밀번호가 올바르지 않습니다.' : error.message); return; }
+}
+
+async function doLogout() {
+  await supabase.auth.signOut();
+  toast('로그아웃 되었습니다.', 'success');
+}
+
+function showAuthError(el, msg) { el.textContent = msg; el.style.display = 'block'; }
+
+// ─── Dashboard ───
+async function loadDashboard() {
+  if (!currentUser || !currentProfile) return;
+  const ym = new Date().toISOString().slice(0, 7);
+  document.getElementById('dashGreeting').textContent = `안녕하세요, ${currentUser.email?.split('@')[0]} 님 👋`;
+
+  // Usage
+  const { data: usage } = await supabase.from('kf_usage').select('search_count').eq('user_id', currentUser.id).eq('year_month', ym).single();
+  const used = usage?.search_count || 0;
+  const limits = { starter: 300, pro: 1000, business: 5000, agency: 999999 };
+  const limit = limits[currentProfile.plan] || 300;
+  const remain = Math.max(0, limit - used);
+  const pct = Math.min(100, (used / limit) * 100);
+
+  document.getElementById('statUsed').textContent = used.toLocaleString();
+  document.getElementById('statRemain').textContent = currentProfile.plan === 'agency' ? '∞' : remain.toLocaleString();
+  document.getElementById('statPlan').textContent = currentProfile.plan.charAt(0).toUpperCase() + currentProfile.plan.slice(1);
+  document.getElementById('usageText').textContent = currentProfile.plan === 'agency' ? `${used} / ∞` : `${used} / ${limit.toLocaleString()}`;
+  document.getElementById('usageFill').style.width = pct + '%';
+
+  // Cache count
+  const { count } = await supabase.from('keyword_cache').select('*', { count: 'exact', head: true });
+  document.getElementById('statCache').textContent = (count || 0).toLocaleString();
+}
+
+// ─── Keyword Analysis ───
+async function runAnalysis() {
+  const input = document.getElementById('toolInput').value.trim();
+  if (!input) { toast('키워드를 입력해주세요.', 'error'); return; }
+  if (input.length < 2) { toast('2자 이상 입력해주세요.', 'error'); return; }
+  if (input.length > 50) { toast('50자 이내로 입력해주세요.', 'error'); return; }
+
+  const btn = document.getElementById('analyzeBtn');
+  const status = document.getElementById('toolStatus');
+  const resultArea = document.getElementById('resultArea');
+
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 분석 중';
+  status.style.display = 'block';
+  status.textContent = '🔄 AI가 키워드를 확장하고 있습니다... (5~15초 소요)';
+  resultArea.innerHTML = '';
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { toast('로그인이 필요합니다.', 'error'); goto('login'); return; }
+
+    const res = await fetch(`${SUPA_URL}/functions/v1/keyword-optimizer`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': SUPA_KEY,
+      },
+      body: JSON.stringify({ productName: input, mode: 'single' }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (data.code === 'LIMIT_EXCEEDED') {
+        status.textContent = `🔴 ${data.error}`;
+        toast('사용량 한도 초과', 'error');
+      } else if (data.code === 'RATE_LIMIT') {
+        status.textContent = '⏳ 요청이 너무 빠릅니다. 1분 후 다시 시도해주세요.';
+        toast('레이트 리밋', 'error');
+      } else if (data.code === 'AUTH_REQUIRED') {
+        toast('로그인이 필요합니다.', 'error');
+        goto('login');
+      } else {
+        status.textContent = `❌ ${data.error || '분석 실패'}`;
+        toast(data.error || '분석 실패', 'error');
+      }
+      return;
+    }
+
+    // Success
+    const keywords = data.keywords || [];
+    const grades = { S: 0, A: 0, B: 0, C: 0, D: 0 };
+    keywords.forEach(k => { grades[k.kqs_grade] = (grades[k.kqs_grade] || 0) + 1; });
+
+    status.textContent = `✅ ${data.step1_count || 0}개 확장 → ${keywords.length}개 유효 키워드 (사용량: ${data.usage?.used || '?'}/${data.usage?.limit || '?'})`;
+
+    let html = '<div class="result-summary">';
+    if (grades.S) html += `<div class="result-chip" style="border-color:rgba(234,179,8,.3);color:var(--gold)">S ${grades.S}</div>`;
+    if (grades.A) html += `<div class="result-chip" style="border-color:rgba(34,197,94,.3);color:var(--green)">A ${grades.A}</div>`;
+    if (grades.B) html += `<div class="result-chip" style="border-color:rgba(59,130,246,.3);color:var(--blue)">B ${grades.B}</div>`;
+    if (grades.C) html += `<div class="result-chip">C ${grades.C}</div>`;
+    if (grades.D) html += `<div class="result-chip">D ${grades.D}</div>`;
+    html += `<div class="result-chip">총 ${keywords.length}개</div></div>`;
+
+    if (keywords.length > 0) {
+      html += '<table class="results-table"><tr><th>등급</th><th>키워드</th><th>검색량</th><th>경쟁</th><th>KQS</th><th>전략</th></tr>';
+      const strategyMap = { S: '핵심공략', A: '적극활용', B: '보조키워드', C: '롱테일', D: '모니터링' };
+      keywords.forEach(k => {
+        const compClass = k.comp_idx === '높음' ? 'comp-high' : k.comp_idx === '낮음' ? 'comp-low' : 'comp-mid';
+        html += `<tr>
+          <td><span class="grade-badge grade-${k.kqs_grade}">${k.kqs_grade}</span></td>
+          <td style="font-weight:600">${k.keyword}</td>
+          <td style="color:var(--orange3)">${k.volume?.toLocaleString()}</td>
+          <td class="${compClass}">${k.comp_idx || '-'}</td>
+          <td>${k.kqs_score}</td>
+          <td><span class="tag tag-${k.kqs_grade}">${strategyMap[k.kqs_grade] || ''}</span></td>
+        </tr>`;
+      });
+      html += '</table>';
+    }
+
+    resultArea.innerHTML = html;
+    loadDashboard(); // Refresh usage
+
+  } catch (e) {
+    status.textContent = `❌ 네트워크 오류: ${e.message}`;
+    toast('네트워크 오류', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '🔍 분석';
+  }
+}
+
+// ─── Admin ───
+async function loadAdmin() {
+  if (!currentProfile?.is_admin) return;
+
+  // Users
+  const { data: users, count: userCount } = await supabase.from('kf_profiles').select('*', { count: 'exact' }).order('created_at', { ascending: false });
+  document.getElementById('adminUsers').textContent = userCount || 0;
+
+  // Cache
+  const { count: cacheCount } = await supabase.from('keyword_cache').select('*', { count: 'exact', head: true });
+  document.getElementById('adminCache').textContent = (cacheCount || 0).toLocaleString();
+
+  // Logs
+  const { count: logCount } = await supabase.from('keyword_search_log').select('*', { count: 'exact', head: true });
+  document.getElementById('adminLogs').textContent = (logCount || 0).toLocaleString();
+
+  // User list
+  if (users && users.length > 0) {
+    let html = '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+    html += '<tr style="border-bottom:1px solid rgba(255,255,255,.06)"><th style="text-align:left;padding:6px;color:var(--text3);font-size:11px">이메일</th><th style="padding:6px;color:var(--text3);font-size:11px">플랜</th><th style="padding:6px;color:var(--text3);font-size:11px">상태</th></tr>';
+    const ym = new Date().toISOString().slice(0, 7);
+    for (const u of users) {
+      const statusBadge = u.is_active
+        ? '<span style="color:var(--green)">활성</span>'
+        : '<span style="color:var(--red)">비활성</span>';
+      const adminBadge = u.is_admin ? ' 🛡' : '';
+      html += `<tr style="border-bottom:1px solid rgba(255,255,255,.03)">
+        <td style="padding:6px">${u.email}${adminBadge}</td>
+        <td style="padding:6px;text-align:center">${u.plan}</td>
+        <td style="padding:6px;text-align:center">${statusBadge}</td>
+      </tr>`;
+    }
+    html += '</table>';
+    document.getElementById('adminUserList').innerHTML = html;
+  }
+}
+
+async function inviteUser() {
+  const email = document.getElementById('inviteEmail').value.trim();
+  const pw = document.getElementById('invitePw').value;
+  if (!email || !pw) { toast('이메일과 비밀번호를 입력해주세요.', 'error'); return; }
+  if (pw.length < 8) { toast('비밀번호 8자 이상', 'error'); return; }
+
+  // Admin invite: signup via client (Supabase handles it)
+  const { data, error } = await supabase.auth.signUp({ email, password: pw, options: { data: { plan: 'starter' } } });
+  if (error) { toast('실패: ' + error.message, 'error'); return; }
+  toast(`${email} 초대 완료!`, 'success');
+  document.getElementById('inviteEmail').value = '';
+  document.getElementById('invitePw').value = '';
+  loadAdmin();
+}
+
+// ─── Utils ───
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  setTimeout(() => { el.classList.remove('show'); }, 3000);
+}
+
+function showLoading(text) { document.getElementById('loadingText').textContent = text; document.getElementById('loadingOverlay').classList.remove('hide'); }
+function hideLoading() { document.getElementById('loadingOverlay').classList.add('hide'); }
+
+// Init: check session
+(async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    // onAuthStateChange will handle it
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KeywordForge — SaaS 사업 기획</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0a0a0f;color:#e2e8f0;line-height:1.7}
+::selection{background:#f97316;color:#fff}
+
+/* Nav */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.85);backdrop-filter:blur(20px);border-bottom:1px solid #1e293b;padding:0 40px}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px}
+.nav-logo{font-size:20px;font-weight:800;letter-spacing:-0.5px}
+.nav-logo span{background:linear-gradient(135deg,#f97316,#fb923c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:8px}
+.nav-links a{color:#64748b;text-decoration:none;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;transition:all .2s;cursor:pointer}
+.nav-links a:hover,.nav-links a.active{color:#f97316;background:#1e293b}
+
+/* Sections */
+.section{max-width:1200px;margin:0 auto;padding:120px 40px 80px}
+.section:first-of-type{padding-top:140px}
+.section-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#f97316;background:#1c1917;border:1px solid #422006;padding:4px 14px;border-radius:20px;margin-bottom:20px}
+.section-title{font-size:42px;font-weight:800;letter-spacing:-1px;margin-bottom:16px;line-height:1.2}
+.section-title span{background:linear-gradient(135deg,#f97316,#fb923c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.section-sub{color:#94a3b8;font-size:18px;max-width:700px;margin-bottom:48px}
+
+/* Hero */
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:48px}
+.hero-stat{background:#111118;border:1px solid #1e293b;border-radius:16px;padding:28px;text-align:center;transition:all .3s}
+.hero-stat:hover{border-color:#f97316;transform:translateY(-4px);box-shadow:0 20px 40px rgba(249,115,22,.1)}
+.hero-stat .num{font-size:36px;font-weight:800;background:linear-gradient(135deg,#f97316,#fb923c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-stat .label{font-size:13px;color:#64748b;margin-top:4px}
+
+/* Cards */
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.card{background:#111118;border:1px solid #1e293b;border-radius:16px;padding:32px;transition:all .3s;position:relative;overflow:hidden}
+.card:hover{border-color:#334155;transform:translateY(-2px)}
+.card-icon{font-size:32px;margin-bottom:16px}
+.card h3{font-size:18px;font-weight:700;margin-bottom:8px}
+.card p{font-size:14px;color:#94a3b8;line-height:1.6}
+.card-badge{position:absolute;top:16px;right:16px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px;letter-spacing:1px}
+.badge-mvp{background:#422006;color:#f97316}
+.badge-v2{background:#052e16;color:#4ade80}
+.badge-v3{background:#172554;color:#60a5fa}
+
+/* Pricing */
+.pricing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.price-card{background:#111118;border:1px solid #1e293b;border-radius:20px;padding:32px 28px;text-align:center;transition:all .3s;position:relative}
+.price-card:hover{transform:translateY(-4px)}
+.price-card.featured{border-color:#f97316;box-shadow:0 0 60px rgba(249,115,22,.15)}
+.price-card.featured::before{content:"BEST";position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;font-size:11px;font-weight:800;padding:4px 16px;border-radius:20px;letter-spacing:1px}
+.price-tier{font-size:14px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.price-amount{font-size:40px;font-weight:800;margin-bottom:4px}
+.price-amount span{font-size:16px;font-weight:400;color:#64748b}
+.price-period{font-size:13px;color:#475569;margin-bottom:24px}
+.price-features{list-style:none;text-align:left;margin-bottom:28px}
+.price-features li{font-size:13px;color:#94a3b8;padding:8px 0;border-bottom:1px solid #1a1a24;display:flex;gap:8px;align-items:start}
+.price-features li::before{content:"✓";color:#f97316;font-weight:700;flex-shrink:0}
+.price-features li.disabled{color:#334155}
+.price-features li.disabled::before{content:"—";color:#334155}
+.price-btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit}
+.price-btn-outline{background:transparent;border:1px solid #334155;color:#94a3b8}
+.price-btn-outline:hover{border-color:#f97316;color:#f97316}
+.price-btn-fill{background:linear-gradient(135deg,#f97316,#ea580c);color:#fff}
+.price-btn-fill:hover{transform:scale(1.02)}
+
+/* Architecture */
+.arch-flow{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:48px}
+.arch-node{background:#111118;border:1px solid #1e293b;border-radius:12px;padding:16px 24px;text-align:center;min-width:140px}
+.arch-node .node-icon{font-size:24px;margin-bottom:6px}
+.arch-node .node-label{font-size:13px;font-weight:700;color:#e2e8f0}
+.arch-node .node-sub{font-size:11px;color:#64748b}
+.arch-arrow{color:#334155;font-size:20px}
+.arch-node.highlight{border-color:#f97316;box-shadow:0 0 20px rgba(249,115,22,.15)}
+
+.tech-stack{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:32px}
+.tech-item{background:#111118;border:1px solid #1e293b;border-radius:12px;padding:24px}
+.tech-item h4{font-size:14px;font-weight:700;color:#f97316;margin-bottom:8px}
+.tech-item p{font-size:13px;color:#94a3b8}
+
+/* Landing Preview */
+.landing-preview{background:#111118;border:1px solid #1e293b;border-radius:20px;overflow:hidden}
+.landing-browser{background:#0a0a0f;padding:12px 20px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #1e293b}
+.landing-dot{width:10px;height:10px;border-radius:50%}
+.dot-r{background:#ef4444}.dot-y{background:#fbbf24}.dot-g{background:#22c55e}
+.landing-url{flex:1;text-align:center;font-size:12px;color:#475569;background:#1e293b;padding:6px 16px;border-radius:6px;margin-left:12px}
+.landing-body{padding:60px 40px;text-align:center}
+.landing-body h2{font-size:36px;font-weight:800;margin-bottom:16px;letter-spacing:-1px}
+.landing-body h2 em{font-style:normal;background:linear-gradient(135deg,#f97316,#fb923c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.landing-body .lp-sub{color:#94a3b8;font-size:16px;margin-bottom:32px}
+.landing-cta{display:inline-flex;gap:12px}
+.landing-cta button{padding:14px 32px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;border:none;transition:all .2s}
+.cta-primary{background:linear-gradient(135deg,#f97316,#ea580c);color:#fff}
+.cta-secondary{background:#1e293b;color:#94a3b8;border:1px solid #334155!important}
+.landing-logos{margin-top:48px;padding-top:32px;border-top:1px solid #1e293b}
+.landing-logos p{font-size:12px;color:#334155;margin-bottom:16px;letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.logo-row{display:flex;justify-content:center;gap:40px;opacity:.4;font-size:20px;font-weight:800;color:#475569}
+
+/* Revenue Sim */
+.rev-table{width:100%;border-collapse:collapse;margin-top:24px}
+.rev-table th{padding:14px 16px;text-align:left;font-size:12px;font-weight:700;color:#64748b;background:#0a0a0f;border-bottom:1px solid #1e293b;text-transform:uppercase;letter-spacing:.5px}
+.rev-table td{padding:12px 16px;font-size:14px;border-bottom:1px solid #111118}
+.rev-table tr:hover{background:#111118}
+.rev-table .rev-highlight{color:#f97316;font-weight:700}
+.rev-table .rev-total td{border-top:2px solid #f97316;font-weight:700;font-size:15px}
+
+.rev-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:32px}
+.rev-box{background:#111118;border:1px solid #1e293b;border-radius:16px;padding:28px;text-align:center}
+.rev-box .rb-num{font-size:32px;font-weight:800;background:linear-gradient(135deg,#f97316,#fb923c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.rev-box .rb-label{font-size:13px;color:#64748b;margin-top:4px}
+
+/* Timeline */
+.timeline{position:relative;margin-top:40px;padding-left:40px}
+.timeline::before{content:"";position:absolute;left:15px;top:0;bottom:0;width:2px;background:#1e293b}
+.tl-item{position:relative;margin-bottom:32px;padding-left:20px}
+.tl-item::before{content:"";position:absolute;left:-32px;top:6px;width:14px;height:14px;border-radius:50%;border:3px solid #f97316;background:#0a0a0f}
+.tl-item.done::before{background:#f97316}
+.tl-date{font-size:12px;font-weight:700;color:#f97316;margin-bottom:4px}
+.tl-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.tl-desc{font-size:13px;color:#94a3b8}
+
+/* Moat */
+.moat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.moat-item{background:#111118;border:1px solid #1e293b;border-radius:16px;padding:28px;display:flex;gap:16px;align-items:start;transition:all .3s}
+.moat-item:hover{border-color:#334155}
+.moat-icon{font-size:28px;flex-shrink:0}
+.moat-item h4{font-size:15px;font-weight:700;margin-bottom:6px}
+.moat-item p{font-size:13px;color:#94a3b8}
+
+/* CTA */
+.final-cta{text-align:center;padding:80px 40px;background:linear-gradient(180deg,transparent,rgba(249,115,22,.05))}
+.final-cta h2{font-size:36px;font-weight:800;margin-bottom:16px}
+.final-cta p{color:#94a3b8;font-size:16px;margin-bottom:32px}
+
+/* Footer */
+.footer{text-align:center;padding:40px;border-top:1px solid #1e293b;color:#334155;font-size:12px}
+
+/* Responsive */
+@media(max-width:900px){
+  .hero-stats,.card-grid,.pricing-grid,.tech-stack,.rev-summary,.moat-grid{grid-template-columns:1fr}
+  .arch-flow{flex-direction:column}
+  .arch-arrow{transform:rotate(90deg)}
+  .section-title{font-size:28px}
+  .section{padding:80px 20px 60px}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo"><span>Keyword</span>Forge</div>
+    <div class="nav-links">
+      <a href="#market" class="active">시장</a>
+      <a href="#product">제품</a>
+      <a href="#pricing">가격</a>
+      <a href="#arch">아키텍처</a>
+      <a href="#landing">랜딩</a>
+      <a href="#revenue">수익</a>
+      <a href="#roadmap">로드맵</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Section 1: Hero / Market -->
+<section class="section" id="market">
+  <div class="section-tag">Market Opportunity</div>
+  <h1 class="section-title"><span>KeywordForge</span> — AI 키워드 인텔리전스 SaaS</h1>
+  <p class="section-sub">네이버 스마트스토어 셀러를 위한 AI 키워드 발굴·등급·자동화 플랫폼. 상품명 하나로 S등급 키워드를 즉시 추출하고, 매월 자동 갱신.</p>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="num">62만+</div>
+      <div class="label">네이버 스마트스토어 셀러</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">₩3.2조</div>
+      <div class="label">네이버 쇼핑 광고 시장</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">87%</div>
+      <div class="label">키워드 수작업 비율</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">$50M</div>
+      <div class="label">TAM (키워드 도구 시장)</div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 2: Problem & Solution -->
+<section class="section">
+  <div class="section-tag">Why Now</div>
+  <h2 class="section-title">셀러의 <span>키워드 지옥</span></h2>
+  <p class="section-sub">네이버 검색 알고리즘은 키워드가 곧 매출이다. 그런데 87%의 셀러가 아직도 수작업으로 키워드를 찾고 있다.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">😤</div>
+      <h3>Pain 1: 시간 낭비</h3>
+      <p>상품 하나당 키워드 리서치에 30분~1시간. 100개 상품이면 일주일. 엑셀에 붙여넣고, 검색량 하나하나 확인하고, 다시 정리하고.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <h3>Pain 2: 감에 의존</h3>
+      <p>경쟁도, CTR, 광고밀도 같은 데이터 없이 "많이 검색되겠지" 하고 찍는다. 검색량 높은데 경쟁 치열한 키워드에 매달린다.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📉</div>
+      <h3>Pain 3: 갱신 안 됨</h3>
+      <p>키워드 트렌드는 매월 바뀌는데, 한 번 세팅하고 방치. 시즌이 지나도 "겨울용"이 달려있고, 트렌드 키워드는 놓친다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Section 3: Product Features -->
+<section class="section" id="product">
+  <div class="section-tag">Product</div>
+  <h2 class="section-title">핵심 <span>기능</span></h2>
+  <p class="section-sub">덕우무역에서 실전 검증된 3-Step 파이프라인을 SaaS로 패키징. AI가 키워드를 찾고, 데이터로 등급을 매기고, 매월 자동으로 갱신한다.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-badge badge-mvp">MVP</div>
+      <div class="card-icon">🤖</div>
+      <h3>AI 키워드 확장</h3>
+      <p>상품명 하나 입력하면 Gemini AI가 7개 카테고리(정식명칭, 기능, 구어체, 소재, 시즌 등)에서 50~70개 키워드를 즉시 생성. 상품 이미지 있으면 Vision AI가 불일치 키워드 자동 제거.</p>
+    </div>
+    <div class="card">
+      <div class="card-badge badge-mvp">MVP</div>
+      <div class="card-icon">📊</div>
+      <h3>KQS 등급 시스템</h3>
+      <p>네이버 API 6개 필드(검색량, PC/모바일, 경쟁도, CTR, 광고밀도)를 한 번에 수집. KQS 공식으로 S/A/B/C/D 등급 자동 산출. "핵심공략" "적극활용" 전략 태그 자동 부여.</p>
+    </div>
+    <div class="card">
+      <div class="card-badge badge-mvp">MVP</div>
+      <div class="card-icon">⚡</div>
+      <h3>즉시 캐시</h3>
+      <p>한 번 검색된 키워드는 DB 캐시. 두 번째부터 0.3초 즉시 응답. 캐시 적중률이 높아질수록 API 비용 절감 + 사용자 경험 향상.</p>
+    </div>
+    <div class="card">
+      <div class="card-badge badge-v2">V2</div>
+      <div class="card-icon">📦</div>
+      <h3>엑셀 일괄 처리</h3>
+      <p>스마트스토어 상품 엑셀 통째로 업로드. 묶음코드별 자동 그룹핑, 고트래픽↔롱테일 페어링 분배. 다운로드 한 번이면 전체 상품 키워드 세팅 끝.</p>
+    </div>
+    <div class="card">
+      <div class="card-badge badge-v2">V2</div>
+      <div class="card-icon">🔄</div>
+      <h3>월간 자동 갱신</h3>
+      <p>네이버 검색량 업데이트 주기(매월 7일)에 맞춰 보유 키워드 전체 자동 갱신. 트렌드 변화 알림. 시즌 키워드 자동 추천.</p>
+    </div>
+    <div class="card">
+      <div class="card-badge badge-v3">V3</div>
+      <div class="card-icon">🏪</div>
+      <h3>스토어 모니터링</h3>
+      <p>내 스토어 + 경쟁 스토어 키워드 추적. 순위 변동 알림. 경쟁사가 새로 올린 키워드 감지. 카테고리별 트렌드 리포트.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Section 4: Pricing -->
+<section class="section" id="pricing">
+  <div class="section-tag">Pricing</div>
+  <h2 class="section-title"><span>가격</span> 정책</h2>
+  <p class="section-sub">AI 키워드 자동 발굴 + Vision 검증 + KQS 등급. 기존 도구가 "검색량 조회"라면 우리는 "키워드 전략 자동화". 가치 기반 프리미엄 가격.</p>
+
+  <div style="background:#111118;border:1px solid #422006;border-radius:16px;padding:24px 28px;margin-bottom:32px;display:flex;gap:24px;flex-wrap:wrap;align-items:center">
+    <div style="flex:1;min-width:200px">
+      <div style="font-size:13px;color:#f97316;font-weight:700;margin-bottom:6px">기존 도구 (아이템스카우트, 셀러마스터)</div>
+      <div style="font-size:14px;color:#94a3b8">셀러가 키워드 직접 입력 → 검색량만 보여줌 → ₩33,000~55,000/월</div>
+    </div>
+    <div style="font-size:24px;color:#334155">→</div>
+    <div style="flex:1;min-width:200px">
+      <div style="font-size:13px;color:#22c55e;font-weight:700;margin-bottom:6px">KeywordForge (우리)</div>
+      <div style="font-size:14px;color:#e2e8f0">AI가 키워드 자동 발굴 + Vision 검증 + 6필드 KQS 등급 + 자동 갱신 + 전략 태그</div>
+    </div>
+  </div>
+
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-tier">Starter</div>
+      <div class="price-amount">₩89,000<span>/월</span></div>
+      <div class="price-period">연 결제 시 ₩69,000/월</div>
+      <ul class="price-features">
+        <li>AI 키워드 추출 30회/일</li>
+        <li>KQS 등급 + 전략 태그</li>
+        <li>엑셀 10개 상품/회</li>
+        <li>캐시 즉시 응답 (0.3초)</li>
+        <li>키워드 히스토리 3개월</li>
+        <li class="disabled">Vision AI 이미지 검증</li>
+        <li class="disabled">스토어 모니터링</li>
+      </ul>
+      <button class="price-btn price-btn-outline">시작하기</button>
+    </div>
+
+    <div class="price-card featured">
+      <div class="price-tier">Pro</div>
+      <div class="price-amount">₩190,000<span>/월</span></div>
+      <div class="price-period">연 결제 시 ₩149,000/월</div>
+      <ul class="price-features">
+        <li>AI 키워드 추출 무제한</li>
+        <li>Vision AI 이미지 검증</li>
+        <li>KQS + AI 전략 리포트</li>
+        <li>엑셀 100개 상품/회</li>
+        <li>월간 자동 갱신 (1,000개)</li>
+        <li>키워드 히스토리 12개월</li>
+        <li>경쟁 스토어 3개 추적</li>
+      </ul>
+      <button class="price-btn price-btn-fill">Pro 시작</button>
+    </div>
+
+    <div class="price-card">
+      <div class="price-tier">Business</div>
+      <div class="price-amount">₩490,000<span>/월</span></div>
+      <div class="price-period">연 결제 시 ₩390,000/월</div>
+      <ul class="price-features">
+        <li>모든 Pro 기능</li>
+        <li>엑셀 무제한</li>
+        <li>월간 자동 갱신 (5,000개)</li>
+        <li>경쟁 스토어 10개 추적</li>
+        <li>팀 계정 3명</li>
+        <li>카테고리 트렌드 리포트</li>
+        <li>전담 CS (카톡)</li>
+      </ul>
+      <button class="price-btn price-btn-outline">시작하기</button>
+    </div>
+
+    <div class="price-card">
+      <div class="price-tier">Agency</div>
+      <div class="price-amount">₩990,000<span>/월</span></div>
+      <div class="price-period">연 결제 시 ₩790,000/월</div>
+      <ul class="price-features">
+        <li>모든 Business 기능</li>
+        <li>팀 계정 무제한</li>
+        <li>월간 자동 갱신 (30,000개)</li>
+        <li>스토어 모니터링 50개</li>
+        <li>API 접근 + 화이트라벨</li>
+        <li>멀티 브랜드 관리</li>
+        <li>온보딩 컨설팅 포함</li>
+      </ul>
+      <button class="price-btn price-btn-outline">문의하기</button>
+    </div>
+  </div>
+
+  <div style="margin-top:24px;background:#111118;border:1px solid #1e293b;border-radius:12px;padding:20px 24px;font-size:13px;color:#94a3b8">
+    <strong style="color:#f97316">가격 근거:</strong> 스마트스토어 셀러 월 매출 ₩10M 기준, 키워드 최적화로 노출 20% 증가 시 추가 매출 ₩2M. Pro ₩190K는 ROI 10배 이상. 기존 도구 대비 3.5배 가격이지만, AI 자동 발굴 + Vision 검증 + KQS 등급은 수작업 30시간 → 5분으로 단축. 시간 가치만 계산해도 시급 ₩10K × 30h = ₩300K 절감.
+  </div>
+</section>
+
+<!-- Section 5: Architecture -->
+<section class="section" id="arch">
+  <div class="section-tag">Architecture</div>
+  <h2 class="section-title">기술 <span>아키텍처</span></h2>
+  <p class="section-sub">Supabase + Edge Functions 기반. 서버리스로 시작해서 트래픽에 따라 자동 스케일.</p>
+
+  <div class="arch-flow">
+    <div class="arch-node">
+      <div class="node-icon">🌐</div>
+      <div class="node-label">사용자</div>
+      <div class="node-sub">React SPA</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">
+      <div class="node-icon">☁️</div>
+      <div class="node-label">Cloudflare</div>
+      <div class="node-sub">CDN + WAF</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node highlight">
+      <div class="node-icon">⚡</div>
+      <div class="node-label">Edge Functions</div>
+      <div class="node-sub">Deno Runtime</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">
+      <div class="node-icon">🧠</div>
+      <div class="node-label">AI Pipeline</div>
+      <div class="node-sub">Gemini + Vision</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">
+      <div class="node-icon">📡</div>
+      <div class="node-label">Naver API</div>
+      <div class="node-sub">6-Field Data</div>
+    </div>
+  </div>
+  <div class="arch-flow">
+    <div class="arch-node">
+      <div class="node-icon">🗄️</div>
+      <div class="node-label">Supabase DB</div>
+      <div class="node-sub">PostgreSQL + Cache</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">
+      <div class="node-icon">⏰</div>
+      <div class="node-label">pg_cron</div>
+      <div class="node-sub">월간 갱신 + 정리</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">
+      <div class="node-icon">🔐</div>
+      <div class="node-label">Auth</div>
+      <div class="node-sub">Supabase Auth + RLS</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">
+      <div class="node-icon">💳</div>
+      <div class="node-label">Billing</div>
+      <div class="node-sub">Stripe / Toss</div>
+    </div>
+  </div>
+
+  <div class="tech-stack">
+    <div class="tech-item">
+      <h4>MVP 비용 구조 (월)</h4>
+      <p>Supabase Pro $25 + Gemini API ~$30 (1만 요청) + Naver API 무료 + Cloudflare 무료 + 도메인 $12/년 = <strong style="color:#f97316">~$60/월</strong> 고정비로 시작</p>
+    </div>
+    <div class="tech-item">
+      <h4>스케일링 전략</h4>
+      <p>캐시 적중률 80% 이상이면 AI/Naver API 호출 80% 절감. 유저 1,000명 시점에도 Supabase Pro + Gemini $150 수준. 매출 대비 인프라 비용 3% 미만 유지.</p>
+    </div>
+    <div class="tech-item">
+      <h4>SaaS 전환에 필요한 추가 개발</h4>
+      <p>① 회원가입/로그인 (Supabase Auth) ② 사용량 제한 미들웨어 ③ 결제 연동 (Toss Payments) ④ 대시보드 UI (React) ⑤ 마이페이지/키워드 저장함 — 약 2~3주 개발</p>
+    </div>
+    <div class="tech-item">
+      <h4>현재 검증 완료</h4>
+      <p>✅ AI 키워드 확장 (Gemini) ✅ 이미지 검증 (Vision AI) ✅ 네이버 6필드 수집 ✅ KQS 등급 산출 ✅ DB 캐시 + 자동 갱신 — <strong style="color:#22c55e">핵심 엔진 100% 완성</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- Section 6: Landing Page Preview -->
+<section class="section" id="landing">
+  <div class="section-tag">Landing Page</div>
+  <h2 class="section-title"><span>랜딩</span> 페이지 목업</h2>
+  <p class="section-sub">첫 방문자에게 보여줄 랜딩 페이지 구조.</p>
+
+  <div class="landing-preview">
+    <div class="landing-browser">
+      <span class="landing-dot dot-r"></span>
+      <span class="landing-dot dot-y"></span>
+      <span class="landing-dot dot-g"></span>
+      <span class="landing-url">keywordforge.io</span>
+    </div>
+    <div class="landing-body">
+      <h2>상품명 하나로<br><em>S등급 키워드</em>를 즉시 추출</h2>
+      <p class="lp-sub">AI가 키워드를 찾고, 네이버 데이터로 등급을 매기고, 매월 자동으로 갱신합니다.<br>62만 스마트스토어 셀러를 위한 키워드 인텔리전스.</p>
+      <div class="landing-cta">
+        <button class="cta-primary">무료로 시작하기</button>
+        <button class="cta-secondary">데모 보기 →</button>
+      </div>
+      <div class="landing-logos">
+        <p>이미 사용 중</p>
+        <div class="logo-row">
+          <span>덕우무역</span>
+          <span>셀러A</span>
+          <span>셀러B</span>
+          <span>셀러C</span>
+          <span>셀러D</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 7: Revenue Simulation -->
+<section class="section" id="revenue">
+  <div class="section-tag">Revenue</div>
+  <h2 class="section-title">수익 <span>시뮬레이션</span></h2>
+  <p class="section-sub">보수적 시나리오. 유료 전환율 6%, Pro 업그레이드율 20% 가정. Free 티어 없이 트라이얼 7일 후 유료 전환.</p>
+
+  <table class="rev-table">
+    <thead>
+      <tr>
+        <th>시점</th>
+        <th>트라이얼</th>
+        <th>Starter (₩89K)</th>
+        <th>Pro (₩190K)</th>
+        <th>Business (₩490K)</th>
+        <th>Agency (₩990K)</th>
+        <th>MRR</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>M1 (런칭)</td>
+        <td>300</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="rev-highlight">₩0</td>
+      </tr>
+      <tr>
+        <td>M3</td>
+        <td>800</td>
+        <td>30</td>
+        <td>8</td>
+        <td>2</td>
+        <td>0</td>
+        <td class="rev-highlight">₩5.2M</td>
+      </tr>
+      <tr>
+        <td>M6</td>
+        <td>2,000</td>
+        <td>80</td>
+        <td>25</td>
+        <td>5</td>
+        <td>1</td>
+        <td class="rev-highlight">₩15.8M</td>
+      </tr>
+      <tr>
+        <td>M12</td>
+        <td>5,000</td>
+        <td>200</td>
+        <td>60</td>
+        <td>12</td>
+        <td>3</td>
+        <td class="rev-highlight">₩38.1M</td>
+      </tr>
+      <tr class="rev-total">
+        <td>M18</td>
+        <td>8,000</td>
+        <td>350</td>
+        <td>100</td>
+        <td>25</td>
+        <td>8</td>
+        <td class="rev-highlight">₩70.3M</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="rev-summary">
+    <div class="rev-box">
+      <div class="rb-num">₩38.1M</div>
+      <div class="rb-label">12개월 MRR</div>
+    </div>
+    <div class="rev-box">
+      <div class="rb-num">₩457M</div>
+      <div class="rb-label">12개월 ARR</div>
+    </div>
+    <div class="rev-box">
+      <div class="rb-num">96%</div>
+      <div class="rb-label">Gross Margin</div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px;background:#111118;border:1px solid #1e293b;border-radius:12px;padding:20px 24px;font-size:13px;color:#94a3b8">
+    <strong style="color:#f97316">ARPU 분석:</strong> M12 기준 유료 고객 275명 × 평균 ₩138K = MRR ₩38.1M. 인프라 비용 ₩600K (매출 대비 1.6%). Pro+Business가 매출의 72% 차지 — 소수 고가 고객이 수익 견인하는 구조. Agency 3개사만 확보해도 월 ₩3M 고정 매출.
+  </div>
+</section>
+
+<!-- Section 8: Roadmap -->
+<section class="section" id="roadmap">
+  <div class="section-tag">Roadmap</div>
+  <h2 class="section-title">개발 <span>로드맵</span></h2>
+  <p class="section-sub">핵심 엔진은 이미 완성. SaaS 패키징은 2~3주면 MVP 출시 가능.</p>
+
+  <div class="timeline">
+    <div class="tl-item done">
+      <div class="tl-date">완료 ✅</div>
+      <div class="tl-title">Phase 0: 엔진 개발 (덕우 내부 도구)</div>
+      <div class="tl-desc">AI 키워드 확장 + Vision 검증 + 네이버 6필드 수집 + KQS 등급 + DB 캐시 + 월간 자동 갱신 크론. 실제 상품에 적용하여 검증 완료.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Week 1~2</div>
+      <div class="tl-title">Phase 1: SaaS MVP</div>
+      <div class="tl-desc">회원가입/로그인 (Supabase Auth) + 사용량 제한 미들웨어 + React 대시보드 + 키워드 저장함 + Free/Starter 결제 연동.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Week 3~4</div>
+      <div class="tl-title">Phase 2: 베타 런칭</div>
+      <div class="tl-desc">랜딩 페이지 + 네이버 카페/블로그 마케팅 + 초기 200 Free 유저 확보. 피드백 수집 후 기능 조정.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Month 2~3</div>
+      <div class="tl-title">Phase 3: Pro 기능</div>
+      <div class="tl-desc">엑셀 일괄 처리 + 키워드 히스토리 차트 + 경쟁 스토어 추적 + Pro/Agency 결제. 유료 전환 드라이브.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Month 4~6</div>
+      <div class="tl-title">Phase 4: 그로스</div>
+      <div class="tl-desc">스토어 모니터링 + 카테고리 트렌드 리포트 + API 제공 + 대행사/솔루션사 파트너십. MRR ₩5M 달성.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Month 6+</div>
+      <div class="tl-title">Phase 5: 플랫폼 확장</div>
+      <div class="tl-desc">쿠팡/11번가 키워드 지원 + 자동 상품명 생성 AI + SEO 점수 진단 + 광고 자동 입찰 연동. 한국 이커머스 SEO 원스톱 솔루션.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 9: Competitive Moat -->
+<section class="section">
+  <div class="section-tag">Moat</div>
+  <h2 class="section-title">경쟁 <span>해자</span></h2>
+  <p class="section-sub">기존 키워드 도구(아이템스카우트, 셀러마스터)와의 차별점.</p>
+
+  <div class="moat-grid">
+    <div class="moat-item">
+      <div class="moat-icon">🤖</div>
+      <div>
+        <h4>AI 자동 확장 vs 수동 입력</h4>
+        <p>기존 도구: 셀러가 키워드를 직접 입력해서 검색량만 확인. KeywordForge: 상품명만 넣으면 AI가 7개 카테고리에서 자동 발굴. 셀러가 생각 못한 키워드까지 찾아냄.</p>
+      </div>
+    </div>
+    <div class="moat-item">
+      <div class="moat-icon">📊</div>
+      <div>
+        <h4>KQS 등급 vs 검색량만</h4>
+        <p>기존 도구: 검색량 숫자만 보여줌. KeywordForge: 경쟁도×CTR×광고밀도를 종합한 KQS로 "이 키워드가 실제로 좋은가"를 판단. 전략 태그까지.</p>
+      </div>
+    </div>
+    <div class="moat-item">
+      <div class="moat-icon">🖼️</div>
+      <div>
+        <h4>이미지 Vision 검증</h4>
+        <p>세계 유일. 상품 이미지를 Vision AI로 분석해서 상품과 맞지 않는 키워드를 자동 제거. "자동차커버"인데 "오토바이커버" 키워드가 빠지는 정밀도.</p>
+      </div>
+    </div>
+    <div class="moat-item">
+      <div class="moat-icon">🔄</div>
+      <div>
+        <h4>데이터 축적 = 네트워크 효과</h4>
+        <p>유저가 많아질수록 캐시 적중률 ↑, 키워드 DB ↑, 트렌드 정확도 ↑. 후발주자가 따라오기 어려운 데이터 해자. 12개월이면 100만+ 키워드 축적.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="final-cta">
+  <h2>핵심 엔진은 <span style="background:linear-gradient(135deg,#f97316,#fb923c);-webkit-background-clip:text;-webkit-text-fill-color:transparent">이미 완성</span>되었습니다</h2>
+  <p>MVP 런칭까지 2~3주. 인프라 비용 월 $60.<br>검증된 엔진 위에 SaaS 껍질만 입히면 됩니다.</p>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  BRIGHTEN GROUP — KeywordForge SaaS Business Plan — 2026.04.18
+</footer>
+
+<script>
+// Smooth scroll for nav links
+document.querySelectorAll('.nav-links a').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
+    a.classList.add('active');
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// Intersection observer for active nav
+const sections = document.querySelectorAll('section[id]');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      document.querySelectorAll('.nav-links a').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id);
+      });
+    }
+  });
+}, { rootMargin: '-30% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>keywordlab.ai — 온라인 배포 기획안 v1</title>
+<style>
+:root {
+  --bg: #0a0f1a;
+  --card: #111827;
+  --border: #1e293b;
+  --accent: #f97316;
+  --accent-glow: rgba(249,115,22,0.08);
+  --green: #22c55e;
+  --green-bg: rgba(34,197,94,0.08);
+  --blue: #3b82f6;
+  --blue-bg: rgba(59,130,246,0.08);
+  --red: #ef4444;
+  --red-bg: rgba(239,68,68,0.08);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167,139,250,0.08);
+  --yellow: #eab308;
+  --yellow-bg: rgba(234,179,8,0.08);
+  --white: #e2e8f0;
+  --muted: #94a3b8;
+  --dim: #475569;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Apple SD Gothic Neo','Pretendard',system-ui,-apple-system,sans-serif; background: var(--bg); color: var(--white); line-height: 1.8; }
+.container { max-width: 880px; margin: 0 auto; padding: 48px 24px 80px; }
+
+/* Header */
+.header { text-align: center; margin-bottom: 56px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+.badge { display: inline-block; padding: 5px 16px; border: 1px solid var(--accent); border-radius: 20px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); background: var(--accent-glow); margin-bottom: 16px; }
+.header h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+.header h1 span { color: var(--accent); }
+.header .sub { color: var(--muted); font-size: 15px; }
+.header .date { color: var(--dim); font-size: 13px; margin-top: 8px; }
+
+/* Section */
+.section { margin-bottom: 48px; }
+.section-head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.section-num { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; color: #fff; }
+.section-title { font-size: 20px; font-weight: 700; }
+
+/* Cards */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+.card-title { font-weight: 700; font-size: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.card p, .card li { color: var(--muted); font-size: 14px; line-height: 1.8; }
+.card ul { padding-left: 20px; }
+.card li { margin-bottom: 4px; }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 10px 12px; background: rgba(249,115,22,0.06); border-bottom: 1px solid var(--border); color: var(--accent); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--muted); }
+tr:last-child td { border-bottom: none; }
+
+/* Tags */
+.tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.tag-green { background: var(--green-bg); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+.tag-blue { background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(59,130,246,0.2); }
+.tag-red { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+.tag-yellow { background: var(--yellow-bg); color: var(--yellow); border: 1px solid rgba(234,179,8,0.2); }
+.tag-purple { background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+
+/* Highlight */
+.highlight { background: var(--accent-glow); border: 1px solid rgba(249,115,22,0.2); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
+.highlight p { color: var(--white); font-size: 14px; }
+.highlight strong { color: var(--accent); }
+
+/* Grid */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* Phase */
+.phase { position: relative; padding-left: 28px; margin-bottom: 24px; }
+.phase::before { content: ''; position: absolute; left: 8px; top: 28px; bottom: -24px; width: 2px; background: var(--border); }
+.phase:last-child::before { display: none; }
+.phase-dot { position: absolute; left: 0; top: 6px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.phase-dot::after { content: ''; width: 8px; height: 8px; border-radius: 50%; }
+
+/* Verdict */
+.verdict { display: flex; gap: 8px; align-items: flex-start; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
+.verdict-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+
+/* Number highlight */
+.num-big { font-size: 28px; font-weight: 800; color: var(--accent); }
+.num-label { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+/* Comparison */
+.vs { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 20px 0; }
+.vs-item { text-align: center; flex: 1; }
+.vs-arrow { color: var(--accent); font-size: 24px; font-weight: 800; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<div class="header">
+  <div class="badge">Internal Planning Doc</div>
+  <h1><span>keywordlab.ai</span> 온라인 배포 기획안</h1>
+  <div class="sub">덕우 네이버 키워드 최적화 도구 — SaaS 전환 전략</div>
+  <div class="date">2026-04-22 · BRIGHTEN GROUP · v1</div>
+</div>
+
+<!-- 0. Executive Summary -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-num" style="background:var(--accent);">0</div>
+    <div class="section-title">Executive Summary</div>
+  </div>
+
+  <div class="highlight">
+    <p>안형선 이사가 v35 키워드 도구에 만족, 베타 사용자 10명 대기 중. <strong>핵심 전략: 당분간 수익보다 키워드 데이터 자산 축적에 집중</strong>하고, Gemini→Gemma 로컬 전환으로 변동비를 0에 수렴시킨다. 수집된 키워드 DB가 해자(moat)가 되어, 후발 주자가 따라올 수 없는 데이터 우위를 확보한다.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card" style="text-align:center;">
+      <div class="num-big">₩100</div>
+      <div class="num-label">상품 1건당 알바비 (시장가)</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="num-big">₩3.1</div>
+      <div class="num-label">상품 1건당 Gemini API 비용</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="num-big">₩0</div>
+      <div class="num-label">Gemma 로컬 전환 후 비용</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="num-big">10명</div>
+      <div class="num-label">베타 대기 사용자</div>
+    </div>
+  </div>
+</div>
+
+<!-- 1. 조사 결과 -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-num" style="background:var(--blue);">1</div>
+    <div class="section-title">조사 결과</div>
+  </div>
+
+  <!-- 네이버 API -->
+  <div class="card">
+    <div class="card-title">🔍 네이버 검색광고 API 약관</div>
+    <div class="verdict" style="background:var(--green-bg);">
+      <span class="verdict-icon">✅</span>
+      <span><strong>결론: 사용 가능 (단, 조건부)</strong></span>
+    </div>
+    <ul>
+      <li>공식 약관: "광고주가 직접 또는 <strong>외주 업체를 통해</strong> 개발하는 경우 사용 가능" — 제3자 서비스 개발 명시 허용</li>
+      <li>셀러노트, 아이템스카우트, 판다랭크 등 기존 서비스들이 동일 API로 수년간 운영 중 — 시장 선례 충분</li>
+      <li><strong>주의:</strong> API 결과 데이터를 "허용 범위를 넘어 무단 복제/배포"하는 것은 금지 → 우리는 <strong>키워드 생성 도구</strong>이고 검색량 데이터 자체를 재판매하는 게 아니므로 해당 없음</li>
+      <li>Rate limit: 공식 명시 없음 (호출량 제한 없다는 커뮤니티 증언), 마스터 계정 1,000개 광고계정 연결 가능</li>
+      <li><strong>우리 전략과 시너지:</strong> 키워드 캐시 DB가 쌓이면 네이버 API 호출이 자연 감소 → 월 1회 검색량 일괄 업데이트만 하면 됨</li>
+    </ul>
+  </div>
+
+  <!-- Gemma 로컬 -->
+  <div class="card">
+    <div class="card-title">🤖 Gemma 로컬 대체 가능성</div>
+    <div class="verdict" style="background:var(--yellow-bg);">
+      <span class="verdict-icon">⚠️</span>
+      <span><strong>결론: 가능하나 품질 테스트 필요</strong></span>
+    </div>
+    <ul>
+      <li><strong>gemma4:e4b</strong> (4B, 9.6GB) — 현재 맥북에 설치 완료. 140개국어 지원, 한국어 포함. JSON structured output 네이티브 지원</li>
+      <li><strong>gemma4:26b</strong> (26B MoE, 17GB) — 이미 설치됨. MMLU Pro 82.6%로 e4b(69.4%) 대비 큰 성능 향상</li>
+      <li><strong>Mac Studio M4 Max 128GB (8월 도착)</strong> → gemma4:26b를 여유 있게 돌릴 수 있음. 31B Dense도 가능</li>
+      <li><strong>리스크:</strong> 한국어 SEO 키워드 생성 품질은 Gemini 2.5-flash 대비 열화 가능성 있음 → A/B 테스트 필수</li>
+      <li><strong>전환 전략:</strong> 즉시 전환이 아니라 Gemini로 운영하면서 Gemma 품질 테스트 → 80% 이상 적중률 확인 후 전환</li>
+    </ul>
+  </div>
+
+  <!-- 도메인 -->
+  <div class="card">
+    <div class="card-title">🌐 keywordlab.ai 도메인</div>
+    <div class="verdict" style="background:var(--blue-bg);">
+      <span class="verdict-icon">🔎</span>
+      <span><strong>결론: 등록 가능 여부 직접 확인 필요</strong></span>
+    </div>
+    <ul>
+      <li>.ai 도메인은 누구나 등록 가능 (국적/자격 제한 없음)</li>
+      <li>등록 비용: 연 $20~80 (Cloudflare 기준 최저가)</li>
+      <li>dukwootrading.com → keywordlab.ai 전환은 브랜드 리포지셔닝으로 적절 (무역회사 → IT 기업 이미지)</li>
+      <li><strong>즉시 확인:</strong> Cloudflare 또는 Namecheap에서 keywordlab.ai 검색 → 가능하면 바로 등록 권장</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 2. 비용 시뮬레이션 -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-num" style="background:var(--green);">2</div>
+    <div class="section-title">비용 시뮬레이션</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💰 Gemini vs Gemma vs 사람 — 상품 1건 비용</div>
+    <div class="vs">
+      <div class="vs-item">
+        <div style="font-size:28px;font-weight:800;color:var(--red);">₩100</div>
+        <div style="font-size:12px;color:var(--dim);">사람 (알바)</div>
+      </div>
+      <div class="vs-arrow">→</div>
+      <div class="vs-item">
+        <div style="font-size:28px;font-weight:800;color:var(--yellow);">₩3.1</div>
+        <div style="font-size:12px;color:var(--dim);">Gemini 2.5-flash</div>
+      </div>
+      <div class="vs-arrow">→</div>
+      <div class="vs-item">
+        <div style="font-size:28px;font-weight:800;color:var(--green);">₩0</div>
+        <div style="font-size:12px;color:var(--dim);">Gemma 로컬</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 월별 손익 시뮬레이션 (₩100/건 과금 기준)</div>
+    <table>
+      <tr>
+        <th>월 처리량</th>
+        <th>매출</th>
+        <th>Gemini 비용</th>
+        <th>Gemini 순익</th>
+        <th>Gemma 순익</th>
+      </tr>
+      <tr>
+        <td><strong>3,000건</strong> (안형선 이사 현재)</td>
+        <td>₩300,000</td>
+        <td>₩9,324</td>
+        <td style="color:var(--green);">₩290,676</td>
+        <td style="color:var(--green);">₩300,000</td>
+      </tr>
+      <tr>
+        <td><strong>5,000건</strong> (자동화 시)</td>
+        <td>₩500,000</td>
+        <td>₩15,540</td>
+        <td style="color:var(--green);">₩484,460</td>
+        <td style="color:var(--green);">₩500,000</td>
+      </tr>
+      <tr>
+        <td><strong>10,000건</strong> (베타 10명)</td>
+        <td>₩1,000,000</td>
+        <td>₩31,080</td>
+        <td style="color:var(--green);">₩968,920</td>
+        <td style="color:var(--green);">₩1,000,000</td>
+      </tr>
+      <tr>
+        <td><strong>30,000건</strong> (확장 시)</td>
+        <td>₩3,000,000</td>
+        <td>₩93,240</td>
+        <td style="color:var(--green);">₩2,906,760</td>
+        <td style="color:var(--green);">₩3,000,000</td>
+      </tr>
+    </table>
+    <p style="color:var(--dim);font-size:12px;margin-top:12px;">* Gemini 비용: 2.5-flash 기준 ($0.15/1M input, $0.60/1M output), 환율 ₩1,400/$</p>
+    <p style="color:var(--dim);font-size:12px;">* Gemma 비용: $0 (로컬 실행, 전기세 무시)</p>
+  </div>
+
+  <div class="highlight">
+    <p><strong>핵심 인사이트:</strong> Gemini 비용이 상품당 ₩3.1원으로 ₩100 과금 대비 3.1%밖에 안 됨. 즉 <strong>Gemini를 당장 쓰더라도 마진 96.9%</strong>. Gemma 전환은 급하지 않음 — 품질 검증 후 여유 있게 전환해도 됨.</p>
+  </div>
+</div>
+
+<!-- 3. 키워드 자산화 전략 -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-num" style="background:var(--purple);">3</div>
+    <div class="section-title">키워드 자산화 전략 — 데이터가 해자(moat)</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📈 키워드 DB 축적 예상</div>
+    <table>
+      <tr>
+        <th>기간</th>
+        <th>처리 상품</th>
+        <th>누적 키워드</th>
+        <th>네이버 API 캐시 히트</th>
+        <th>신규 API 호출</th>
+      </tr>
+      <tr>
+        <td>1개월차</td>
+        <td>5,000건</td>
+        <td>250,000개</td>
+        <td>25%</td>
+        <td>187,500건</td>
+      </tr>
+      <tr>
+        <td>3개월차</td>
+        <td>15,000건</td>
+        <td>750,000개</td>
+        <td>55%</td>
+        <td>112,500건</td>
+      </tr>
+      <tr>
+        <td>6개월차</td>
+        <td>30,000건</td>
+        <td style="color:var(--accent);font-weight:700;">1,500,000개</td>
+        <td style="color:var(--green);font-weight:700;">70%</td>
+        <td>75,000건</td>
+      </tr>
+      <tr>
+        <td>12개월차</td>
+        <td>60,000건</td>
+        <td style="color:var(--accent);font-weight:700;">3,000,000개</td>
+        <td style="color:var(--green);font-weight:700;">85%+</td>
+        <td>37,500건</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔄 월 1회 검색량 업데이트 전략</div>
+    <p>회장님 아이디어대로, 이미 수집된 키워드는 월 1회만 네이버 API로 검색량을 갱신합니다.</p>
+    <ul>
+      <li><strong>실시간 조회 대상:</strong> 신규 상품의 키워드만 (캐시에 없는 것)</li>
+      <li><strong>월간 배치 업데이트:</strong> 기존 캐시 키워드의 검색량을 월 1회 일괄 갱신</li>
+      <li><strong>효과:</strong> 6개월 후 일일 API 호출량 70% 감소 → rate limit 걱정 없음</li>
+      <li><strong>추가 자산:</strong> 시계열 검색량 데이터 축적 → "이 키워드 트렌드가 올라가고 있다" 분석 가능 (향후 프리미엄 기능)</li>
+    </ul>
+  </div>
+
+  <div class="highlight">
+    <p><strong>왜 이게 해자인가:</strong> 후발 주자가 동일한 도구를 만들어도, 우리는 이미 <strong>300만 키워드 × 검색량 × 카테고리 매칭 데이터</strong>를 보유. 새로 시작하면 이 데이터를 모으는 데만 1년 걸림. 또한 "어떤 카테고리에 어떤 키워드가 실제로 매출에 기여했는지" 사용자 피드백까지 쌓이면 단순 API 호출로는 재현 불가.</p>
+  </div>
+</div>
+
+<!-- 4. 브랜드 전환 -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-num" style="background:var(--accent);">4</div>
+    <div class="section-title">브랜드 전환: dukwootrading.com → keywordlab.ai</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🏢 포지셔닝</div>
+    <table>
+      <tr>
+        <th></th>
+        <th>Before</th>
+        <th>After</th>
+      </tr>
+      <tr>
+        <td style="font-weight:600;color:var(--white);">도메인</td>
+        <td>dukwootrading.com</td>
+        <td style="color:var(--accent);font-weight:700;">keywordlab.ai</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;color:var(--white);">이미지</td>
+        <td>무역 회사</td>
+        <td style="color:var(--accent);">AI 기술 회사</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;color:var(--white);">고객</td>
+        <td>해외 바이어</td>
+        <td style="color:var(--accent);">네이버 셀러</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;color:var(--white);">수익 모델</td>
+        <td>무역 마진</td>
+        <td style="color:var(--accent);">SaaS 구독 + 대행</td>
+      </tr>
+    </table>
+    <p style="margin-top:12px;">기존 dukwootrading.com은 유지하면서 keywordlab.ai를 새 서비스 랜딩으로 활용. 덕우무역의 소싱 경험 + AI 기술 결합을 강조.</p>
+  </div>
+</div>
+
+<!-- 5. 실행 로드맵 -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-num" style="background:var(--green);">5</div>
+    <div class="section-title">실행 로드맵</div>
+  </div>
+
+  <!-- Phase 1 -->
+  <div class="phase">
+    <div class="phase-dot" style="background:var(--green-bg);border:2px solid var(--green);"><div style="width:8px;height:8px;border-radius:50%;background:var(--green);"></div></div>
+    <div class="card">
+      <div class="card-title"><span class="tag tag-green">Phase 1</span> 즉시 실행 (이번 주 ~ 1주)</div>
+      <table>
+        <tr><th>항목</th><th>담당</th><th>기한</th></tr>
+        <tr><td>keywordlab.ai 도메인 등록 (Cloudflare)</td><td>회장님/엠버</td><td>오늘</td></tr>
+        <tr><td>Supabase Auth 회원가입/로그인 추가</td><td>엠버(코워크)</td><td>3일</td></tr>
+        <tr><td>사용량 카운터 DB 테이블 (일/월 한도)</td><td>엠버(코워크)</td><td>3일</td></tr>
+        <tr><td>keyword_cache 테이블에 updated_at 인덱스 추가 (월간 배치용)</td><td>엠버(코워크)</td><td>1일</td></tr>
+        <tr><td>프론트엔드 로그인 화면 + 기본 대시보드</td><td>엠버(코워크)</td><td>5일</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Phase 2 -->
+  <div class="phase">
+    <div class="phase-dot" style="background:var(--blue-bg);border:2px solid var(--blue);"><div style="width:8px;height:8px;border-radius:50%;background:var(--blue);"></div></div>
+    <div class="card">
+      <div class="card-title"><span class="tag tag-blue">Phase 2</span> 베타 런칭 (2~3주차)</div>
+      <table>
+        <tr><th>항목</th><th>담당</th><th>기한</th></tr>
+        <tr><td>베타 사용자 10명 초대 (안형선 이사 네트워크)</td><td>안형선 이사</td><td>2주차</td></tr>
+        <tr><td>안형선 이사 키워드 적용 전후 성과 데이터 수집</td><td>안형선 이사</td><td>2주차~</td></tr>
+        <tr><td>베타 피드백 수집 + 버그 수정</td><td>엠버(코워크)</td><td>2~3주차</td></tr>
+        <tr><td>Gemma e4b / 26b 키워드 생성 품질 A/B 테스트</td><td>엠버(코워크)</td><td>2~3주차</td></tr>
+        <tr><td>엑셀 모드 비동기 처리 전환 (큐 기반)</td><td>엠버(코워크)</td><td>3주차</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Phase 3 -->
+  <div class="phase">
+    <div class="phase-dot" style="background:var(--purple-bg);border:2px solid var(--purple);"><div style="width:8px;height:8px;border-radius:50%;background:var(--purple);"></div></div>
+    <div class="card">
+      <div class="card-title"><span class="tag tag-purple">Phase 3</span> 정식 런칭 (4~6주차)</div>
+      <table>
+        <tr><th>항목</th><th>담당</th><th>기한</th></tr>
+        <tr><td>keywordlab.ai 랜딩 페이지 (성과 사례 포함)</td><td>엠버(코워크)</td><td>4주차</td></tr>
+        <tr><td>과금 시스템 연동 (₩100/건 or 월정액)</td><td>엠버(코워크)</td><td>4주차</td></tr>
+        <tr><td>Gemma 로컬 전환 (품질 검증 통과 시)</td><td>엠버(코워크)</td><td>5주차</td></tr>
+        <tr><td>월간 검색량 배치 업데이트 크론 구축</td><td>엠버(코워크)</td><td>5주차</td></tr>
+        <tr><td>셀러 커뮤니티 마케팅 (사례 콘텐츠)</td><td>안형선 이사</td><td>6주차</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Phase 4 -->
+  <div class="phase">
+    <div class="phase-dot" style="background:var(--accent-glow);border:2px solid var(--accent);"><div style="width:8px;height:8px;border-radius:50%;background:var(--accent);"></div></div>
+    <div class="card">
+      <div class="card-title"><span class="tag tag-yellow">Phase 4</span> 스케일 (3~6개월)</div>
+      <table>
+        <tr><th>항목</th><th>비고</th></tr>
+        <tr><td>키워드 DB 100만 개 돌파</td><td>데이터 해자 형성</td></tr>
+        <tr><td>Mac Studio 도착 → 26b/31b 로컬 전환</td><td>API 비용 완전 제거</td></tr>
+        <tr><td>"키워드 트렌드" 프리미엄 기능 추가</td><td>시계열 데이터 활용</td></tr>
+        <tr><td>덕우 대행 모델 병행 (스토어 운영 대행)</td><td>원래 사업 모델과 결합</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 6. 가격 모델 -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-num" style="background:var(--yellow);">6</div>
+    <div class="section-title">가격 모델 (안)</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🆓 무료 체험</div>
+      <ul>
+        <li>월 30건 처리</li>
+        <li>기본 키워드 생성</li>
+        <li>KQS 등급 표시</li>
+        <li>목적: 전환 유도</li>
+      </ul>
+    </div>
+    <div class="card" style="border-color:var(--accent);">
+      <div class="card-title">🔥 유료 — ₩100/건 (종량제)</div>
+      <ul>
+        <li>무제한 처리</li>
+        <li>엑셀 일괄 업로드</li>
+        <li>이미지 필터 포함</li>
+        <li>처리 이력 대시보드</li>
+        <li>안형선 이사 기준: 월 3,000건 = ₩300,000</li>
+        <li>자동화 시: 월 10,000건 = ₩1,000,000</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card" style="margin-top:0;">
+    <p style="font-size:13px;">* 월정액 전환은 Phase 3 이후 검토. 초기에는 종량제로 단순하게 시작하여 사용자당 처리량 패턴을 파악한 후 최적 구간 설정.</p>
+  </div>
+</div>
+
+<!-- 7. 기술 아키텍처 -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-num" style="background:var(--blue);">7</div>
+    <div class="section-title">기술 아키텍처 (목표)</div>
+  </div>
+
+  <div class="card">
+    <pre style="font-size:12px;color:var(--muted);line-height:1.6;overflow-x:auto;white-space:pre;">
+┌─────────────────────────────────────────────────┐
+│  keywordlab.ai (Vercel / Supabase Hosting)          │
+│  ┌───────────┐  ┌──────────┐  ┌──────────────┐  │
+│  │ 랜딩 페이지 │  │ 대시보드  │  │ 엑셀 업로드  │  │
+│  └─────┬─────┘  └────┬─────┘  └──────┬───────┘  │
+│        └──────────────┼───────────────┘          │
+│                       ▼                          │
+│            Supabase Auth (회원/과금)               │
+└───────────────────────┬─────────────────────────┘
+                        ▼
+┌─────────────────────────────────────────────────┐
+│  Supabase Edge Function: keyword-tool v35+       │
+│                                                   │
+│  ┌──────────┐    ┌──────────────┐    ┌────────┐  │
+│  │ A1: AI   │───▶│ A2: 조합엔진 │───▶│B: 필터 │  │
+│  │ 키워드생성│    │ (코드 전수)  │    │ 3단계  │  │
+│  └──────────┘    └──────────────┘    └───┬────┘  │
+│       │                                   │       │
+│   Phase 1: Gemini 2.5-flash              │       │
+│   Phase 3: Gemma 로컬 (자체 API 서버)     │       │
+│                                   ┌──────▼────┐  │
+│                                   │C: 네이버   │  │
+│                                   │검색량 체크  │  │
+│                                   │(캐시 우선) │  │
+│                                   └──────┬────┘  │
+│                                          │       │
+│                                   ┌──────▼────┐  │
+│                                   │keyword_   │  │
+│                                   │cache DB   │  │
+│                                   │(자산 축적)│  │
+│                                   └───────────┘  │
+└─────────────────────────────────────────────────┘
+    </pre>
+  </div>
+</div>
+
+<!-- 8. 리스크 -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-num" style="background:var(--red);">8</div>
+    <div class="section-title">리스크 & 대응</div>
+  </div>
+
+  <div class="card">
+    <table>
+      <tr>
+        <th>리스크</th>
+        <th>심각도</th>
+        <th>대응</th>
+      </tr>
+      <tr>
+        <td>네이버 API 정책 변경</td>
+        <td><span class="tag tag-yellow">중</span></td>
+        <td>캐시 DB가 해자 — API 차단되어도 기존 데이터로 서비스 지속 가능. 월 1회 업데이트만 하면 됨</td>
+      </tr>
+      <tr>
+        <td>Gemma 한국어 키워드 품질 미달</td>
+        <td><span class="tag tag-yellow">중</span></td>
+        <td>Gemini 비용이 ₩3.1/건으로 극히 저렴 → 무기한 Gemini 사용해도 마진 96.9%</td>
+      </tr>
+      <tr>
+        <td>경쟁사 카피</td>
+        <td><span class="tag tag-yellow">중</span></td>
+        <td>선점 데이터 축적이 방어벽. 6개월 내 150만 키워드 확보 목표</td>
+      </tr>
+      <tr>
+        <td>베타 사용자 이탈</td>
+        <td><span class="tag tag-green">하</span></td>
+        <td>무료 체험 30건 제공, 안형선 이사가 직접 온보딩 지원</td>
+      </tr>
+      <tr>
+        <td>Supabase 비용 증가</td>
+        <td><span class="tag tag-green">하</span></td>
+        <td>Free tier로 시작, 월 10만 건까지 커버 가능. Pro 전환 시 월 $25</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- Footer -->
+<div style="text-align:center;padding-top:40px;border-top:1px solid var(--border);color:var(--dim);font-size:12px;">
+  BRIGHTEN GROUP · Confidential · 2026-04-22<br>
+  Prepared by Ember 🔥 for 이한상 회장님
+</div>
+
+</div>
+</body>
+</html>

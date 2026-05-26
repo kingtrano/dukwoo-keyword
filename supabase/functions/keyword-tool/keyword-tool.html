@@ -539,9 +539,8 @@ btnStart.addEventListener("click", async () => {
         const fc = data.filter_count !== undefined ? data.filter_count : "?";
         const nc = data.naver_count !== undefined ? data.naver_count : "?";
         const ic = data.image_count !== undefined ? data.image_count : g.keywords.length;
-        const cc = data.category_count !== undefined ? data.category_count : ic;
-        kwEl.textContent = `${data.step1_count}→${fc}→${nc}→이미지${ic}→카테${cc}개`;
-        log(`키워드 완료: ${g.name} — AI ${data.step1_count}→필터${fc}→네이버${nc}→이미지${ic}→카테${cc}개`, "success");
+        kwEl.textContent = `${data.step1_count}→${fc}→${nc}→${ic}개`;
+        log(`키워드 완료: ${g.name} — AI ${data.step1_count}→필터${fc}→네이버${nc}→이미지${ic}개`, "success");
 
         // ── generate-title: 키워드 기반 최적화 상품명 생성 → D열 ──
         if (g.keywords.length > 0) {

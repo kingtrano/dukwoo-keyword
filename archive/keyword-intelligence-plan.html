@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>키워드 인텔리전스 시스템</title>
+<style>
+:root {
+  --bg: #0f172a; --card: #1e293b; --border: #334155;
+  --orange: #f97316; --og: rgba(249,115,22,0.12);
+  --green: #22c55e; --gg: rgba(34,197,94,0.12);
+  --blue: #3b82f6; --bg2: rgba(59,130,246,0.12);
+  --purple: #a78bfa; --pg: rgba(167,139,250,0.12);
+  --red: #ef4444; --rg: rgba(239,68,68,0.12);
+  --amber: #f59e0b; --ag: rgba(245,158,11,0.12);
+  --cyan: #06b6d4; --cg: rgba(6,182,212,0.12);
+  --white: #e2e8f0; --muted: #94a3b8; --dim: #64748b;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Apple SD Gothic Neo','Pretendard',system-ui,sans-serif; background:var(--bg); color:var(--white); line-height:1.7; }
+.container { max-width:960px; margin:0 auto; padding:60px 24px; }
+
+.header { text-align:center; margin-bottom:60px; }
+.badge { display:inline-block; padding:6px 18px; border-radius:20px; font-size:12px; letter-spacing:2px; text-transform:uppercase; margin-bottom:20px; }
+.badge-orange { border:1px solid var(--orange); color:var(--orange); background:var(--og); }
+.header h1 { font-size:36px; font-weight:800; letter-spacing:-1px; margin-bottom:12px; }
+.header h1 span { color:var(--orange); }
+.header p { color:var(--muted); font-size:16px; max-width:640px; margin:0 auto; }
+
+.section { margin-bottom:56px; }
+.sh { display:flex; align-items:center; gap:14px; margin-bottom:24px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+.sn { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex-shrink:0; }
+.st { font-size:22px; font-weight:700; }
+
+.card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:20px; }
+.card-head { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.card-head .icon { font-size:18px; }
+.card-head .name { font-weight:700; font-size:15px; }
+.card-head .desc { font-size:13px; color:var(--muted); margin-left:auto; }
+
+/* Data Grid */
+.data-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:20px; }
+.data-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px; }
+.data-card .d-icon { font-size:24px; margin-bottom:8px; }
+.data-card .d-title { font-weight:700; font-size:14px; margin-bottom:4px; }
+.data-card .d-api { font-family:'SF Mono',monospace; font-size:11px; color:var(--purple); background:var(--pg); display:inline-block; padding:2px 8px; border-radius:4px; margin-bottom:6px; }
+.data-card .d-desc { font-size:12px; color:var(--muted); line-height:1.6; }
+.data-card .d-use { font-size:12px; color:var(--green); margin-top:6px; font-weight:600; }
+
+/* Grade System */
+.grade-table { width:100%; border-collapse:collapse; }
+.grade-table th {
+  padding:14px 16px; text-align:left; font-size:12px; font-weight:700;
+  text-transform:uppercase; letter-spacing:1px; color:var(--dim);
+  background:var(--bg); border-bottom:1px solid var(--border);
+}
+.grade-table td {
+  padding:14px 16px; font-size:14px; border-bottom:1px solid rgba(255,255,255,0.04);
+  vertical-align:middle;
+}
+.grade-table tr:last-child td { border-bottom:none; }
+.grade-table tr:hover td { background:rgba(255,255,255,0.02); }
+
+.grade-badge {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:10px;
+  font-weight:800; font-size:16px;
+}
+.grade-S { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#0f172a; box-shadow:0 0 12px rgba(245,158,11,0.4); }
+.grade-A { background:var(--gg); color:var(--green); border:1px solid rgba(34,197,94,0.4); }
+.grade-B { background:var(--bg2); color:var(--blue); border:1px solid rgba(59,130,246,0.4); }
+.grade-C { background:rgba(255,255,255,0.06); color:var(--muted); border:1px solid var(--border); }
+.grade-D { background:var(--rg); color:var(--red); border:1px solid rgba(239,68,68,0.4); }
+
+.grade-name { font-weight:700; }
+.grade-cond { font-size:13px; color:var(--muted); }
+.grade-example { font-size:12px; color:var(--dim); font-style:italic; }
+
+/* Formula */
+.formula-box {
+  background:var(--bg); border:1px solid var(--border); border-radius:12px;
+  padding:24px; margin-bottom:20px; text-align:center;
+}
+.formula-main {
+  font-family:'SF Mono',monospace; font-size:20px; font-weight:700;
+  color:var(--orange); margin-bottom:12px; letter-spacing:1px;
+}
+.formula-desc { font-size:13px; color:var(--muted); max-width:600px; margin:0 auto; }
+
+/* Flow Steps */
+.flow-steps { display:flex; gap:12px; margin-bottom:20px; }
+.flow-step {
+  flex:1; background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:16px; text-align:center;
+  position:relative;
+}
+.flow-step::after {
+  content:'→'; position:absolute; right:-12px; top:50%;
+  transform:translateY(-50%); color:var(--dim); font-size:18px; font-weight:700;
+}
+.flow-step:last-child::after { display:none; }
+.flow-step .fs-num { font-size:11px; color:var(--dim); font-weight:700; letter-spacing:1px; margin-bottom:4px; }
+.flow-step .fs-icon { font-size:24px; margin-bottom:6px; }
+.flow-step .fs-title { font-weight:700; font-size:13px; margin-bottom:2px; }
+.flow-step .fs-desc { font-size:11px; color:var(--muted); }
+
+/* Big Numbers */
+.big-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px; }
+.big-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:24px; text-align:center; }
+.big-card .num { font-size:36px; font-weight:800; }
+.big-card .unit { font-size:13px; color:var(--muted); margin-top:4px; }
+
+/* Note */
+.note { background:var(--og); border:1px solid rgba(249,115,22,0.25); border-radius:12px; padding:18px 22px; font-size:14px; line-height:1.8; }
+.note strong { color:var(--orange); }
+
+/* Enrichment Sources */
+.source-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.source-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; }
+.source-card .sc-title { font-weight:700; font-size:15px; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.source-card .sc-items { font-size:13px; color:var(--muted); line-height:2; }
+.source-card .sc-items strong { color:var(--white); }
+
+.footer { margin-top:60px; padding:24px 0; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:12px; color:var(--dim); }
+.footer-brand { font-weight:700; letter-spacing:1px; }
+
+@media (max-width:768px) {
+  .data-grid, .big-grid { grid-template-columns:1fr 1fr; }
+  .source-grid { grid-template-columns:1fr; }
+  .flow-steps { flex-wrap:wrap; }
+  .flow-step::after { display:none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="badge badge-orange">Keyword Intelligence System</div>
+  <h1>🔥 키워드 <span>인텔리전스</span> 시스템</h1>
+  <p>검색량만이 아닌, 경쟁도·클릭률·광고밀도·트렌드까지 수집하여 <strong>키워드 등급</strong>을 자동 산출. 쓸수록 똑똑해지는 키워드 자산.</p>
+</div>
+
+<!-- SECTION 1: 수집 데이터 -->
+<div class="section">
+  <div class="sh">
+    <div class="sn" style="background:var(--bg2);color:var(--blue);border:1px solid rgba(59,130,246,0.3);">01</div>
+    <div class="st">수집 가능한 데이터 — 네이버 API가 이미 다 준다</div>
+  </div>
+
+  <div class="note" style="margin-bottom:24px;background:var(--bg2);border-color:rgba(59,130,246,0.25);">
+    <strong style="color:var(--blue);">발견:</strong> 현재 우리는 검색량(volume)만 수집 중인데, <strong style="color:var(--blue);">네이버 검색광고 API가 한 번 호출에 6가지 데이터를 동시에 줍니다.</strong> 추가 API 호출 없이 기존 코드에서 필드만 더 저장하면 됩니다.
+  </div>
+
+  <div class="data-grid">
+    <div class="data-card">
+      <div class="d-icon">📊</div>
+      <div class="d-title">월간 검색량</div>
+      <div class="d-api">monthlyQcCnt</div>
+      <div class="d-desc">PC + 모바일 합산 검색 횟수</div>
+      <div class="d-use">✓ 현재 수집 중</div>
+    </div>
+    <div class="data-card" style="border-color:var(--green);">
+      <div class="d-icon">⚔️</div>
+      <div class="d-title">경쟁 정도</div>
+      <div class="d-api">compIdx</div>
+      <div class="d-desc">높음/중간/낮음 — 광고주 간 경쟁 강도</div>
+      <div class="d-use" style="color:var(--orange);">★ 신규 수집 — 등급 핵심</div>
+    </div>
+    <div class="data-card" style="border-color:var(--green);">
+      <div class="d-icon">👆</div>
+      <div class="d-title">월평균 클릭수</div>
+      <div class="d-api">monthlyAvClkCnt</div>
+      <div class="d-desc">실제로 클릭된 횟수 (PC+모바일)</div>
+      <div class="d-use" style="color:var(--orange);">★ 신규 수집 — 실제 행동 지표</div>
+    </div>
+    <div class="data-card" style="border-color:var(--green);">
+      <div class="d-icon">📈</div>
+      <div class="d-title">월평균 클릭률 (CTR)</div>
+      <div class="d-api">monthlyAvCtr</div>
+      <div class="d-desc">검색 대비 클릭 비율 — 구매 의도 척도</div>
+      <div class="d-use" style="color:var(--orange);">★ 신규 수집 — 구매전환 예측</div>
+    </div>
+    <div class="data-card" style="border-color:var(--green);">
+      <div class="d-icon">📢</div>
+      <div class="d-title">월평균 노출 광고수</div>
+      <div class="d-api">plAvgDepth</div>
+      <div class="d-desc">검색 시 평균 몇 개의 광고가 노출되는지</div>
+      <div class="d-use" style="color:var(--orange);">★ 신규 수집 — 광고 포화도</div>
+    </div>
+    <div class="data-card" style="border-color:var(--green);">
+      <div class="d-icon">🔗</div>
+      <div class="d-title">네이버 연관 키워드</div>
+      <div class="d-api">relKeyword</div>
+      <div class="d-desc">네이버가 추천하는 연관 키워드 리스트</div>
+      <div class="d-use" style="color:var(--orange);">★ 신규 수집 — 2차 확장용</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: 등급 공식 -->
+<div class="section">
+  <div class="sh">
+    <div class="sn" style="background:var(--ag);color:var(--amber);border:1px solid rgba(245,158,11,0.3);">02</div>
+    <div class="st">키워드 등급 시스템 — KQS (Keyword Quality Score)</div>
+  </div>
+
+  <div class="formula-box">
+    <div class="formula-main">KQS = (검색량 × CTR × 2) ÷ (경쟁도 × 광고밀도)</div>
+    <div class="formula-desc">
+      검색량이 높고, 사람들이 실제로 클릭하고(CTR 가중치 2배), 경쟁이 낮고, 광고가 적은 키워드 = 높은 점수.<br>
+      <strong style="color:var(--amber);">한마디로: "사람은 많이 찾는데, 파는 사람은 적은" 황금 키워드를 자동으로 찾아내는 공식.</strong>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head" style="background:var(--ag);border-bottom-color:rgba(245,158,11,0.2);">
+      <span class="icon">🏆</span>
+      <span class="name" style="color:var(--amber);">등급 기준표</span>
+      <span class="desc">KQS 점수 기반 자동 분류</span>
+    </div>
+    <table class="grade-table">
+      <thead>
+        <tr>
+          <th style="width:70px">등급</th>
+          <th style="width:120px">이름</th>
+          <th>조건</th>
+          <th style="width:200px">예시</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="grade-badge grade-S">S</span></td>
+          <td><span class="grade-name" style="color:var(--amber);">황금 키워드</span></td>
+          <td class="grade-cond">검색량 ≥500 + 경쟁 '낮음' + CTR 상위 20%<br><strong style="color:var(--amber);">수요는 높은데 공급이 없는 키워드</strong></td>
+          <td class="grade-example">"부직포커버" — 470건인데 경쟁 낮음</td>
+        </tr>
+        <tr>
+          <td><span class="grade-badge grade-A">A</span></td>
+          <td><span class="grade-name" style="color:var(--green);">우량 키워드</span></td>
+          <td class="grade-cond">검색량 ≥300 + 경쟁 '중간' 이하 + 광고수 ≤5</td>
+          <td class="grade-example">"차량커버" — 1,350건, 경쟁 중간</td>
+        </tr>
+        <tr>
+          <td><span class="grade-badge grade-B">B</span></td>
+          <td><span class="grade-name" style="color:var(--blue);">롱테일 골드</span></td>
+          <td class="grade-cond">검색량 50~300 + 경쟁 '낮음' + CTR 양호<br><strong style="color:var(--blue);">틈새 수요. 잘 넣으면 상위 노출 가능</strong></td>
+          <td class="grade-example">"자동차커버추천" — 80건, 경쟁 낮음</td>
+        </tr>
+        <tr>
+          <td><span class="grade-badge grade-C">C</span></td>
+          <td><span class="grade-name">일반 키워드</span></td>
+          <td class="grade-cond">검색량 10~50 또는 경쟁 높은 중간 볼륨</td>
+          <td class="grade-example">"세단커버" — 10건, 존재는 하지만 미미</td>
+        </tr>
+        <tr>
+          <td><span class="grade-badge grade-D">D</span></td>
+          <td><span class="grade-name" style="color:var(--red);">비효율 키워드</span></td>
+          <td class="grade-cond">경쟁 '높음' + CTR 하위 20% + 광고 포화<br><strong style="color:var(--red);">돈만 들고 효과 없는 키워드</strong></td>
+          <td class="grade-example">대기업이 광고 독점한 일반 키워드</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SECTION 3: 처리 파이프라인 -->
+<div class="section">
+  <div class="sh">
+    <div class="sn" style="background:var(--og);color:var(--orange);border:1px solid rgba(249,115,22,0.3);">03</div>
+    <div class="st">강화된 파이프라인 — 기존 3-Step → 5-Step</div>
+  </div>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="fs-num">STEP 1</div>
+      <div class="fs-icon">🤖</div>
+      <div class="fs-title">AI 키워드 생성</div>
+      <div class="fs-desc">Gemini로 50개+ 후보</div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-num">STEP 2</div>
+      <div class="fs-icon">👁️</div>
+      <div class="fs-title">이미지 검증</div>
+      <div class="fs-desc">Vision AI 필터링</div>
+    </div>
+    <div class="flow-step" style="border-color:var(--green);">
+      <div class="fs-num" style="color:var(--green);">STEP 3 확장</div>
+      <div class="fs-icon">📊</div>
+      <div class="fs-title" style="color:var(--green);">네이버 풀 데이터</div>
+      <div class="fs-desc">검색량 + 경쟁도 + CTR + 광고수 동시 수집</div>
+    </div>
+    <div class="flow-step" style="border-color:var(--amber);">
+      <div class="fs-num" style="color:var(--amber);">STEP 4 신규</div>
+      <div class="fs-icon">🏆</div>
+      <div class="fs-title" style="color:var(--amber);">KQS 등급 산출</div>
+      <div class="fs-desc">S/A/B/C/D 자동 분류</div>
+    </div>
+    <div class="flow-step" style="border-color:var(--blue);">
+      <div class="fs-num" style="color:var(--blue);">STEP 5 신규</div>
+      <div class="fs-icon">💾</div>
+      <div class="fs-title" style="color:var(--blue);">DB 캐시 + 로그</div>
+      <div class="fs-desc">저장 → 재검색 즉시 반환</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: UI 변화 -->
+<div class="section">
+  <div class="sh">
+    <div class="sn" style="background:var(--gg);color:var(--green);border:1px solid rgba(34,197,94,0.3);">04</div>
+    <div class="st">사용자가 보게 되는 화면</div>
+  </div>
+
+  <div class="card">
+    <div class="card-head" style="background:var(--gg);border-bottom-color:rgba(34,197,94,0.2);">
+      <span class="icon">🖥️</span>
+      <span class="name" style="color:var(--green);">1개 키워드 추출 결과 — Before vs After</span>
+    </div>
+    <div style="padding:24px;">
+      <p style="font-size:13px;color:var(--dim);margin-bottom:16px;font-weight:600;">현재: 키워드 + 검색량만 나옴</p>
+      <div style="background:var(--bg);border-radius:10px;padding:14px 18px;font-family:'SF Mono',monospace;font-size:13px;color:var(--muted);margin-bottom:24px;">
+        1. 차량커버 (1,350)<br>
+        2. 차량덮개 (1,230)<br>
+        3. 자동차덮개 (1,100)<br>
+        ...
+      </div>
+
+      <p style="font-size:13px;color:var(--green);margin-bottom:16px;font-weight:600;">변경 후: 등급 + 경쟁도 + CTR + 전략 태그까지</p>
+      <div style="background:var(--bg);border-radius:10px;overflow:hidden;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);">
+              <th style="padding:12px 14px;text-align:center;color:var(--dim);font-size:11px;width:40px">#</th>
+              <th style="padding:12px 14px;text-align:left;color:var(--dim);font-size:11px;">등급</th>
+              <th style="padding:12px 14px;text-align:left;color:var(--dim);font-size:11px;">키워드</th>
+              <th style="padding:12px 14px;text-align:right;color:var(--dim);font-size:11px;">검색량</th>
+              <th style="padding:12px 14px;text-align:center;color:var(--dim);font-size:11px;">경쟁</th>
+              <th style="padding:12px 14px;text-align:right;color:var(--dim);font-size:11px;">CTR</th>
+              <th style="padding:12px 14px;text-align:center;color:var(--dim);font-size:11px;">전략</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+              <td style="padding:10px 14px;text-align:center;color:var(--dim);">1</td>
+              <td style="padding:10px 14px;"><span class="grade-badge grade-S" style="width:28px;height:28px;font-size:12px;">S</span></td>
+              <td style="padding:10px 14px;font-weight:600;">부직포커버</td>
+              <td style="padding:10px 14px;text-align:right;color:var(--orange);font-weight:700;">470</td>
+              <td style="padding:10px 14px;text-align:center;"><span style="color:var(--green);font-weight:600;">낮음</span></td>
+              <td style="padding:10px 14px;text-align:right;">4.2%</td>
+              <td style="padding:10px 14px;text-align:center;"><span style="background:var(--ag);color:var(--amber);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">필수 사용</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+              <td style="padding:10px 14px;text-align:center;color:var(--dim);">2</td>
+              <td style="padding:10px 14px;"><span class="grade-badge grade-A" style="width:28px;height:28px;font-size:12px;">A</span></td>
+              <td style="padding:10px 14px;font-weight:600;">차량커버</td>
+              <td style="padding:10px 14px;text-align:right;color:var(--orange);font-weight:700;">1,350</td>
+              <td style="padding:10px 14px;text-align:center;"><span style="color:var(--amber);font-weight:600;">중간</span></td>
+              <td style="padding:10px 14px;text-align:right;">3.1%</td>
+              <td style="padding:10px 14px;text-align:center;"><span style="background:var(--gg);color:var(--green);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">우선 배치</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+              <td style="padding:10px 14px;text-align:center;color:var(--dim);">3</td>
+              <td style="padding:10px 14px;"><span class="grade-badge grade-B" style="width:28px;height:28px;font-size:12px;">B</span></td>
+              <td style="padding:10px 14px;font-weight:600;">자동차커버추천</td>
+              <td style="padding:10px 14px;text-align:right;color:var(--orange);font-weight:700;">80</td>
+              <td style="padding:10px 14px;text-align:center;"><span style="color:var(--green);font-weight:600;">낮음</span></td>
+              <td style="padding:10px 14px;text-align:right;">5.8%</td>
+              <td style="padding:10px 14px;text-align:center;"><span style="background:var(--bg2);color:var(--blue);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">틈새 공략</span></td>
+            </tr>
+            <tr>
+              <td style="padding:10px 14px;text-align:center;color:var(--dim);">4</td>
+              <td style="padding:10px 14px;"><span class="grade-badge grade-D" style="width:28px;height:28px;font-size:12px;">D</span></td>
+              <td style="padding:10px 14px;font-weight:600;">자동차용품</td>
+              <td style="padding:10px 14px;text-align:right;color:var(--orange);font-weight:700;">12,000</td>
+              <td style="padding:10px 14px;text-align:center;"><span style="color:var(--red);font-weight:600;">높음</span></td>
+              <td style="padding:10px 14px;text-align:right;">0.3%</td>
+              <td style="padding:10px 14px;text-align:center;"><span style="background:var(--rg);color:var(--red);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">회피</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5: 데이터 가치 -->
+<div class="section">
+  <div class="sh">
+    <div class="sn" style="background:var(--pg);color:var(--purple);border:1px solid rgba(167,139,250,0.3);">05</div>
+    <div class="st">1년 후 — 우리가 갖게 되는 것</div>
+  </div>
+
+  <div class="big-grid">
+    <div class="big-card">
+      <div class="num" style="color:var(--amber);">5,000+</div>
+      <div class="unit">등급화된 키워드 DB</div>
+    </div>
+    <div class="big-card">
+      <div class="num" style="color:var(--green);">90%+</div>
+      <div class="unit">즉시 응답율</div>
+    </div>
+    <div class="big-card">
+      <div class="num" style="color:var(--blue);">12개월</div>
+      <div class="unit">트렌드 이력 (월별 추적)</div>
+    </div>
+  </div>
+
+  <div class="source-grid">
+    <div class="source-card">
+      <div class="sc-title">💰 비즈니스 가치</div>
+      <div class="sc-items">
+        <strong>덕우 내부:</strong> 상품명 최적화 속도 26배 향상<br>
+        <strong>외부 판매:</strong> "키워드 리포트" 상품화 가능<br>
+        <strong>경쟁 우위:</strong> S등급 키워드 선점 = 검색 상위 노출<br>
+        <strong>데이터 자산:</strong> 쇼핑 카테고리별 키워드 맵 완성
+      </div>
+    </div>
+    <div class="source-card">
+      <div class="sc-title">📊 분석 가능해지는 것들</div>
+      <div class="sc-items">
+        <strong>S등급 키워드 알림:</strong> 신규 황금 키워드 발견 시 알림<br>
+        <strong>경쟁 변화 추적:</strong> 경쟁도가 낮음→높음 변한 키워드<br>
+        <strong>시즌 패턴:</strong> "겨울차커버" 9월부터 검색량↑ 감지<br>
+        <strong>트렌드 리포트:</strong> 월별 키워드 변화 자동 보고서
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: 구현 범위 -->
+<div class="section">
+  <div class="sh">
+    <div class="sn" style="background:var(--og);color:var(--orange);border:1px solid rgba(249,115,22,0.3);">06</div>
+    <div class="st">구현 단계</div>
+  </div>
+
+  <div class="card">
+    <div class="card-head" style="background:var(--og);border-bottom-color:rgba(249,115,22,0.2);">
+      <span class="icon">🚀</span>
+      <span class="name" style="color:var(--orange);">Phase 1 → Phase 2 → Phase 3</span>
+    </div>
+    <div style="padding:0;">
+      <div style="padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:14px;align-items:flex-start;">
+        <span class="grade-badge grade-A" style="width:auto;padding:4px 12px;font-size:12px;flex-shrink:0;">P1</span>
+        <div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px;">캐시 시스템 + 풀 데이터 수집</div>
+          <div style="font-size:13px;color:var(--muted);">keyword_cache / keyword_search_log 테이블 생성, Edge Function v2 (캐시 로직 + 6개 필드 전부 저장), 월간 갱신 크론</div>
+        </div>
+      </div>
+      <div style="padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:14px;align-items:flex-start;">
+        <span class="grade-badge grade-B" style="width:auto;padding:4px 12px;font-size:12px;flex-shrink:0;">P2</span>
+        <div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px;">KQS 등급 시스템 + UI 업그레이드</div>
+          <div style="font-size:13px;color:var(--muted);">KQS 공식 적용 → S/A/B/C/D 자동 분류, 프론트엔드에 등급·경쟁도·CTR·전략태그 컬럼 추가, 엑셀 다운로드에 등급 포함</div>
+        </div>
+      </div>
+      <div style="padding:18px 22px;display:flex;gap:14px;align-items:flex-start;">
+        <span class="grade-badge grade-C" style="width:auto;padding:4px 12px;font-size:12px;flex-shrink:0;">P3</span>
+        <div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px;">인텔리전스 레이어 (추후)</div>
+          <div style="font-size:13px;color:var(--muted);">시즌 트렌드 감지, S등급 키워드 신규 발견 알림, 경쟁 변화 모니터링, 월간 키워드 리포트 자동 생성</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>P1 작업량:</strong> Supabase 테이블 2개 생성 + Edge Function 수정 + 크론 1개. <strong>반나절이면 됩니다.</strong><br>
+    <strong>P2 작업량:</strong> KQS 로직 + UI 컬럼 추가. <strong>반나절.</strong><br>
+    P1+P2 합쳐서 하루면 라이브 가능합니다.
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-brand">BRIGHTEN GROUP — 덕우 키워드 인텔리전스</div>
+  <div>Confidential &nbsp;|&nbsp; 2026.04</div>
+</footer>
+
+</div>
+</body>
+</html>

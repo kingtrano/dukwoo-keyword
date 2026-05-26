@@ -1148,6 +1148,13 @@ async function handleSeedExpand(body: any, cors: any) {
 Deno.serve(async (req: Request) => {
   const cors = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+
+  // GET → HTML UI 서빙
+  if (req.method === "GET") {
+    const html = await Deno.readTextFile(new URL("./keyword-tool.html", import.meta.url).pathname);
+    return new Response(html, { headers: { ...cors, "Content-Type": "text/html; charset=utf-8" } });
+  }
+
   if (req.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: { ...cors, "Content-Type": "application/json" } });
 
   try {

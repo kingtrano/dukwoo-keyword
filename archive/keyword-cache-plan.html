@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>키워드 캐시 시스템 기획안</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --border: #334155;
+  --orange: #f97316;
+  --orange-glow: rgba(249,115,22,0.12);
+  --green: #22c55e;
+  --green-glow: rgba(34,197,94,0.12);
+  --blue: #3b82f6;
+  --blue-glow: rgba(59,130,246,0.12);
+  --purple: #a78bfa;
+  --purple-glow: rgba(167,139,250,0.12);
+  --red: #ef4444;
+  --red-glow: rgba(239,68,68,0.12);
+  --white: #e2e8f0;
+  --muted: #94a3b8;
+  --dim: #64748b;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Apple SD Gothic Neo','Pretendard',system-ui,sans-serif; background: var(--bg); color: var(--white); line-height: 1.7; }
+
+.container { max-width: 960px; margin: 0 auto; padding: 60px 24px; }
+
+/* Header */
+.header { text-align: center; margin-bottom: 60px; }
+.header-badge {
+  display: inline-block;
+  padding: 6px 18px;
+  border: 1px solid var(--orange);
+  border-radius: 20px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--orange);
+  background: var(--orange-glow);
+  margin-bottom: 20px;
+}
+.header h1 { font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+.header h1 span { color: var(--orange); }
+.header p { color: var(--muted); font-size: 16px; max-width: 600px; margin: 0 auto; }
+
+/* Section */
+.section { margin-bottom: 56px; }
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.section-num {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 14px;
+  flex-shrink: 0;
+}
+.section-title { font-size: 22px; font-weight: 700; }
+
+.s-orange .section-num { background: var(--orange-glow); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+.s-blue .section-num { background: var(--blue-glow); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+.s-green .section-num { background: var(--green-glow); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+.s-purple .section-num { background: var(--purple-glow); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+
+/* Flow Diagram */
+.flow {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+.flow-node {
+  flex: 1;
+  min-width: 140px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 16px;
+  text-align: center;
+  position: relative;
+}
+.flow-node .icon { font-size: 28px; margin-bottom: 8px; }
+.flow-node .label { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.flow-node .desc { font-size: 12px; color: var(--muted); }
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  color: var(--dim);
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.flow-node.hit { border-color: var(--green); background: var(--green-glow); }
+.flow-node.hit .label { color: var(--green); }
+.flow-node.miss { border-color: var(--orange); background: var(--orange-glow); }
+.flow-node.miss .label { color: var(--orange); }
+
+/* DB Schema */
+.schema-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.schema-head {
+  padding: 16px 20px;
+  background: rgba(59,130,246,0.08);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.schema-head .tbl-icon { font-size: 18px; }
+.schema-head .tbl-name { font-weight: 700; font-size: 15px; color: var(--blue); }
+.schema-head .tbl-desc { font-size: 13px; color: var(--muted); margin-left: auto; }
+.schema-body { padding: 0; }
+.schema-row {
+  display: flex;
+  padding: 10px 20px;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  align-items: center;
+}
+.schema-row:last-child { border-bottom: none; }
+.schema-row .col-name {
+  width: 180px;
+  font-weight: 600;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: var(--white);
+  flex-shrink: 0;
+}
+.schema-row .col-type {
+  width: 120px;
+  color: var(--purple);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.schema-row .col-desc { color: var(--muted); flex: 1; }
+.schema-row .pk { color: var(--orange); }
+.schema-row .idx { color: var(--green); font-size: 11px; margin-left: 6px; }
+
+/* Compare */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.compare-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+}
+.compare-card h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.compare-card.before h4 { color: var(--red); }
+.compare-card.after h4 { color: var(--green); }
+.compare-card .metric {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 14px;
+}
+.compare-card .metric:last-child { border-bottom: none; }
+.compare-card .metric .val { font-weight: 700; }
+.compare-card.before .val { color: var(--red); }
+.compare-card.after .val { color: var(--green); }
+
+/* Timeline / Cron */
+.cron-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.cron-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+}
+.cron-card .cron-title {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cron-card .cron-schedule {
+  font-family: 'SF Mono', monospace;
+  font-size: 13px;
+  color: var(--purple);
+  background: var(--purple-glow);
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+.cron-card .cron-desc { font-size: 13px; color: var(--muted); }
+
+/* Impact Numbers */
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.impact-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+}
+.impact-card .num { font-size: 32px; font-weight: 800; color: var(--orange); }
+.impact-card .unit { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+/* Note */
+.note-box {
+  background: var(--orange-glow);
+  border: 1px solid rgba(249,115,22,0.25);
+  border-radius: 12px;
+  padding: 18px 22px;
+  font-size: 14px;
+  color: var(--white);
+  line-height: 1.8;
+}
+.note-box strong { color: var(--orange); }
+
+/* Footer */
+.footer {
+  margin-top: 60px;
+  padding: 24px 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--dim);
+}
+.footer-brand { font-weight: 700; letter-spacing: 1px; }
+
+@media (max-width: 768px) {
+  .compare-grid, .cron-grid { grid-template-columns: 1fr; }
+  .impact-grid { grid-template-columns: 1fr 1fr; }
+  .flow { flex-wrap: wrap; gap: 8px; }
+  .flow-arrow { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-badge">System Design Proposal</div>
+  <h1>🔥 키워드 <span>캐시 시스템</span> 기획안</h1>
+  <p>검색한 키워드를 DB에 쌓고, 재검색 시 즉시 반환. 네이버 검색량 주기에 맞춰 자동 갱신.</p>
+</div>
+
+<!-- SECTION 1: 현재 vs 변경 후 -->
+<div class="section s-orange">
+  <div class="section-head">
+    <div class="section-num">01</div>
+    <div class="section-title">현재 vs 변경 후</div>
+  </div>
+
+  <div class="compare-grid">
+    <div class="compare-card before">
+      <h4>🔴 현재 (매번 새로 호출)</h4>
+      <div class="metric"><span>응답 시간</span><span class="val">~8초</span></div>
+      <div class="metric"><span>Gemini AI 호출</span><span class="val">매번</span></div>
+      <div class="metric"><span>네이버 API 호출</span><span class="val">매번</span></div>
+      <div class="metric"><span>데이터 축적</span><span class="val">없음</span></div>
+      <div class="metric"><span>동일 키워드 재검색</span><span class="val">8초 재소모</span></div>
+      <div class="metric"><span>비용</span><span class="val">검색당 과금</span></div>
+    </div>
+    <div class="compare-card after">
+      <h4>🟢 변경 후 (캐시 + 자동 갱신)</h4>
+      <div class="metric"><span>캐시 히트 응답</span><span class="val">~0.3초</span></div>
+      <div class="metric"><span>Gemini AI 호출</span><span class="val">신규만</span></div>
+      <div class="metric"><span>네이버 API 호출</span><span class="val">신규 + 월 1회 갱신</span></div>
+      <div class="metric"><span>데이터 축적</span><span class="val">무한 누적</span></div>
+      <div class="metric"><span>동일 키워드 재검색</span><span class="val">즉시 반환</span></div>
+      <div class="metric"><span>비용</span><span class="val">80% 이상 절감</span></div>
+    </div>
+  </div>
+
+  <div class="impact-grid">
+    <div class="impact-card"><div class="num">26x</div><div class="unit">속도 향상 (캐시 히트)</div></div>
+    <div class="impact-card"><div class="num">80%+</div><div class="unit">API 비용 절감</div></div>
+    <div class="impact-card"><div class="num">∞</div><div class="unit">키워드 데이터 축적</div></div>
+    <div class="impact-card"><div class="num">월 1회</div><div class="unit">자동 검색량 갱신</div></div>
+  </div>
+</div>
+
+<!-- SECTION 2: 플로우 -->
+<div class="section s-blue">
+  <div class="section-head">
+    <div class="section-num">02</div>
+    <div class="section-title">요청 처리 플로우</div>
+  </div>
+
+  <p style="color:var(--muted);font-size:14px;margin-bottom:20px;font-weight:600;">Case A — 캐시 히트 (기존 키워드)</p>
+  <div class="flow" style="margin-bottom:32px;">
+    <div class="flow-node"><div class="icon">🔍</div><div class="label">키워드 입력</div><div class="desc">"자동차커버"</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node hit"><div class="icon">💾</div><div class="label">DB 조회</div><div class="desc">keyword_cache 검색</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node hit"><div class="icon">✅</div><div class="label">캐시 히트!</div><div class="desc">30일 이내 데이터 존재</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node hit"><div class="icon">⚡</div><div class="label">즉시 반환</div><div class="desc">~0.3초 응답</div></div>
+  </div>
+
+  <p style="color:var(--muted);font-size:14px;margin-bottom:20px;font-weight:600;">Case B — 캐시 미스 (신규 키워드)</p>
+  <div class="flow">
+    <div class="flow-node"><div class="icon">🔍</div><div class="label">키워드 입력</div><div class="desc">"신규키워드"</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node miss"><div class="icon">💾</div><div class="label">DB 조회</div><div class="desc">데이터 없음</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node miss"><div class="icon">🤖</div><div class="label">3-Step 처리</div><div class="desc">AI→이미지→검색량</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node"><div class="icon">💾</div><div class="label">DB 저장</div><div class="desc">결과 캐싱</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node"><div class="icon">📊</div><div class="label">반환</div><div class="desc">~8초 응답</div></div>
+  </div>
+</div>
+
+<!-- SECTION 3: DB 스키마 -->
+<div class="section s-green">
+  <div class="section-head">
+    <div class="section-num">03</div>
+    <div class="section-title">DB 테이블 설계</div>
+  </div>
+
+  <!-- Table 1: keyword_cache -->
+  <div class="schema-card">
+    <div class="schema-head">
+      <span class="tbl-icon">📦</span>
+      <span class="tbl-name">keyword_cache</span>
+      <span class="tbl-desc">검색 키워드별 연관 키워드 + 검색량 캐시</span>
+    </div>
+    <div class="schema-body">
+      <div class="schema-row">
+        <span class="col-name"><span class="pk">🔑</span> id</span>
+        <span class="col-type">uuid</span>
+        <span class="col-desc">PK, 자동 생성</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">source_keyword</span>
+        <span class="col-type">text</span>
+        <span class="col-desc">입력한 원본 키워드 (예: "자동차커버") <span class="idx">UNIQUE</span></span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">keywords</span>
+        <span class="col-type">jsonb</span>
+        <span class="col-desc">[{keyword, volume}, ...] — 연관 키워드 + 검색량 배열</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">step1_count</span>
+        <span class="col-type">int</span>
+        <span class="col-desc">Step 1 AI 생성 개수</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">step2_count</span>
+        <span class="col-type">int</span>
+        <span class="col-desc">Step 2 이미지 검증 통과 개수</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">total_keywords</span>
+        <span class="col-type">int</span>
+        <span class="col-desc">최종 키워드 수</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">volume_updated_at</span>
+        <span class="col-type">timestamptz</span>
+        <span class="col-desc">검색량 마지막 갱신일 <span class="idx">INDEX</span></span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">created_at</span>
+        <span class="col-type">timestamptz</span>
+        <span class="col-desc">최초 생성일</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">hit_count</span>
+        <span class="col-type">int</span>
+        <span class="col-desc">캐시 히트 횟수 (인기도 추적)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table 2: keyword_search_log -->
+  <div class="schema-card">
+    <div class="schema-head">
+      <span class="tbl-icon">📋</span>
+      <span class="tbl-name">keyword_search_log</span>
+      <span class="tbl-desc">검색 이력 전체 로그 (누가, 언제, 뭘 검색했는지)</span>
+    </div>
+    <div class="schema-body">
+      <div class="schema-row">
+        <span class="col-name"><span class="pk">🔑</span> id</span>
+        <span class="col-type">bigint</span>
+        <span class="col-desc">PK, 자동 증가</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">source_keyword</span>
+        <span class="col-type">text</span>
+        <span class="col-desc">검색한 키워드</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">mode</span>
+        <span class="col-type">text</span>
+        <span class="col-desc">'single' | 'excel' — 어느 탭에서 검색했는지</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">cache_hit</span>
+        <span class="col-type">boolean</span>
+        <span class="col-desc">캐시에서 반환했는지 여부</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">result_count</span>
+        <span class="col-type">int</span>
+        <span class="col-desc">반환된 키워드 수</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">response_ms</span>
+        <span class="col-type">int</span>
+        <span class="col-desc">응답 시간 (밀리초)</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name">searched_at</span>
+        <span class="col-type">timestamptz</span>
+        <span class="col-desc">검색 시각 <span class="idx">INDEX</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: 자동 갱신 크론 -->
+<div class="section s-purple">
+  <div class="section-head">
+    <div class="section-num">04</div>
+    <div class="section-title">자동 갱신 크론 설계</div>
+  </div>
+
+  <div class="note-box" style="margin-bottom:24px;">
+    <strong>네이버 검색량 업데이트 주기:</strong> 네이버 검색광고 API는 <strong>월간 검색량</strong>을 제공하며, 매월 초(1~5일 사이) 전월 데이터로 갱신됩니다. 정확한 갱신일은 공식적으로 명시되지 않으므로, <strong>매월 7일</strong>에 갱신 크론을 돌려 확실하게 최신 데이터를 수집합니다.
+  </div>
+
+  <div class="cron-grid">
+    <div class="cron-card">
+      <div class="cron-title">🔄 월간 검색량 갱신</div>
+      <div class="cron-schedule">0 3 7 * *</div>
+      <div class="cron-desc">
+        매월 7일 새벽 3시 실행<br>
+        keyword_cache의 전체 키워드에 대해<br>
+        네이버 API로 최신 월간 검색량 재조회<br>
+        → keywords jsonb 내 volume 값 업데이트<br>
+        → volume_updated_at 갱신
+      </div>
+    </div>
+    <div class="cron-card">
+      <div class="cron-title">🧹 오래된 캐시 정리</div>
+      <div class="cron-schedule">0 4 1 * *</div>
+      <div class="cron-desc">
+        매월 1일 새벽 4시 실행<br>
+        90일간 hit_count = 0인 키워드 삭제<br>
+        (아무도 안 쓰는 키워드 정리)<br>
+        → DB 크기 관리<br>
+        → 활성 키워드만 유지
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5: Edge Function 변경 -->
+<div class="section s-orange">
+  <div class="section-head">
+    <div class="section-num">05</div>
+    <div class="section-title">Edge Function 변경 로직</div>
+  </div>
+
+  <div class="schema-card" style="border-color:var(--orange);">
+    <div class="schema-head" style="background:var(--orange-glow);border-bottom-color:rgba(249,115,22,0.2);">
+      <span class="tbl-icon">⚡</span>
+      <span class="tbl-name" style="color:var(--orange);">keyword-optimizer (v2)</span>
+      <span class="tbl-desc">캐시 우선 조회 로직 추가</span>
+    </div>
+    <div class="schema-body" style="padding:20px;">
+      <pre style="font-family:'SF Mono','Fira Code',monospace;font-size:13px;color:var(--muted);line-height:2;white-space:pre-wrap;">
+<span style="color:var(--dim);">// 1. 요청 수신</span>
+<span style="color:var(--white);">POST { productName, imageUrl, mode }</span>
+
+<span style="color:var(--dim);">// 2. 캐시 조회</span>
+<span style="color:var(--blue);">SELECT * FROM keyword_cache</span>
+<span style="color:var(--blue);">WHERE source_keyword = productName</span>
+<span style="color:var(--blue);">AND volume_updated_at > now() - interval '30 days'</span>
+
+<span style="color:var(--dim);">// 3-A. 캐시 히트 → 즉시 반환</span>
+<span style="color:var(--green);">IF (cached) {</span>
+<span style="color:var(--green);">  UPDATE hit_count += 1</span>
+<span style="color:var(--green);">  INSERT INTO keyword_search_log (cache_hit: true)</span>
+<span style="color:var(--green);">  RETURN cached.keywords  ← ~0.3초</span>
+<span style="color:var(--green);">}</span>
+
+<span style="color:var(--dim);">// 3-B. 캐시 미스 → 기존 3-Step 실행</span>
+<span style="color:var(--orange);">Step 1: Gemini AI 키워드 생성</span>
+<span style="color:var(--orange);">Step 2: Vision AI 이미지 검증</span>
+<span style="color:var(--orange);">Step 3: 네이버 API 검색량 조회</span>
+
+<span style="color:var(--dim);">// 4. 결과 저장</span>
+<span style="color:var(--blue);">UPSERT INTO keyword_cache (...)</span>
+<span style="color:var(--blue);">INSERT INTO keyword_search_log (cache_hit: false)</span>
+
+<span style="color:var(--white);">RETURN keywords  ← ~8초</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: 성장 시나리오 -->
+<div class="section s-green">
+  <div class="section-head">
+    <div class="section-num">06</div>
+    <div class="section-title">데이터 성장 시나리오</div>
+  </div>
+
+  <div class="schema-card">
+    <div class="schema-head" style="background:var(--green-glow);border-bottom-color:rgba(34,197,94,0.2);">
+      <span class="tbl-icon">📈</span>
+      <span class="tbl-name" style="color:var(--green);">축적 예상</span>
+      <span class="tbl-desc">사용할수록 빨라지는 구조</span>
+    </div>
+    <div class="schema-body" style="padding:0;">
+      <div class="schema-row">
+        <span class="col-name" style="width:100px;">1개월</span>
+        <span class="col-type" style="color:var(--green);">~200건</span>
+        <span class="col-desc">초기 키워드 수집. 캐시 히트율 ~20%</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name" style="width:100px;">3개월</span>
+        <span class="col-type" style="color:var(--green);">~800건</span>
+        <span class="col-desc">주요 상품 키워드 대부분 캐시. 히트율 ~60%</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name" style="width:100px;">6개월</span>
+        <span class="col-type" style="color:var(--green);">~2,000건</span>
+        <span class="col-desc">덕우 전 상품 커버. 히트율 ~80%</span>
+      </div>
+      <div class="schema-row">
+        <span class="col-name" style="width:100px;">1년</span>
+        <span class="col-type" style="color:var(--green);">~5,000건</span>
+        <span class="col-desc">시장 키워드 맵 완성. 히트율 90%+. 대부분 즉시 응답</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>핵심 가치:</strong> 사용하면 할수록 데이터가 쌓이고, 쌓일수록 빨라지고, 빨라질수록 더 많이 사용하게 되는 <strong>선순환 구조</strong>입니다. 1년 뒤에는 네이버 키워드 검색량 DB 자체가 자산이 됩니다.
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-brand">BRIGHTEN GROUP — 덕우 키워드 시스템</div>
+  <div>Confidential &nbsp;|&nbsp; 2026.04</div>
+</footer>
+
+</div>
+</body>
+</html>

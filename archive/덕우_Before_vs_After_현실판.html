@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>덕우무역 네이버 자동화 — 현실적 Before vs After</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+  .header { text-align: center; padding: 48px 24px 24px; }
+  .header h1 { font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+  .header p { color: #94a3b8; font-size: 14px; }
+
+  /* Warning banner */
+  .constraint-banner {
+    max-width: 1100px; margin: 0 auto 32px; padding: 20px 24px;
+    background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.25); border-radius: 12px;
+  }
+  .constraint-banner h3 { color: #fbbf24; font-size: 15px; margin-bottom: 10px; }
+  .constraint-banner ul { list-style: none; }
+  .constraint-banner li { color: #fde68a; font-size: 13px; padding: 3px 0; }
+  .constraint-banner li::before { content: '⚠ '; }
+  .constraint-banner .bottom-line { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(234,179,8,0.15); color: #f59e0b; font-size: 13px; font-weight: 600; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px 40px; }
+
+  .section-title {
+    font-size: 20px; font-weight: 700; margin: 40px 0 20px; padding-bottom: 10px;
+    border-bottom: 2px solid #334155; display: flex; align-items: center; gap: 10px;
+  }
+
+  /* ── VERDICT TABLE ── */
+  .verdict-table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    margin-bottom: 32px; border-radius: 12px; overflow: hidden; border: 1px solid #334155;
+  }
+  .verdict-table th {
+    padding: 14px 16px; text-align: left; font-size: 12px;
+    text-transform: uppercase; letter-spacing: 0.5px; background: #1e293b; color: #94a3b8;
+  }
+  .verdict-table th.v { text-align: center; }
+  .verdict-table td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid #1e293b; line-height: 1.6; }
+  .verdict-table tr { background: #0f172a; }
+  .verdict-table tr:nth-child(even) { background: #1e293b; }
+  .verdict-table tr:last-child td { border-bottom: none; }
+
+  .v-yes { display: inline-block; background: rgba(34,197,94,0.15); color: #4ade80; padding: 3px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+  .v-partial { display: inline-block; background: rgba(250,204,21,0.15); color: #fbbf24; padding: 3px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+  .v-no { display: inline-block; background: rgba(239,68,68,0.15); color: #f87171; padding: 3px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+  .v-skip { display: inline-block; background: rgba(148,163,184,0.15); color: #94a3b8; padding: 3px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+
+  .tag-before { display: inline-block; background: rgba(239,68,68,0.15); color: #f87171; padding: 2px 8px; border-radius: 5px; font-size: 12px; font-weight: 600; }
+  .tag-after { display: inline-block; background: rgba(34,197,94,0.15); color: #4ade80; padding: 2px 8px; border-radius: 5px; font-size: 12px; font-weight: 600; }
+  .tag-limit { display: inline-block; background: rgba(250,204,21,0.15); color: #fbbf24; padding: 2px 8px; border-radius: 5px; font-size: 12px; font-weight: 600; }
+  .tag-block { display: inline-block; background: rgba(239,68,68,0.15); color: #f87171; padding: 2px 8px; border-radius: 5px; font-size: 12px; font-weight: 600; }
+
+  .note { font-size: 12px; color: #64748b; font-style: italic; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow-section { margin-bottom: 32px; }
+  .flow-label {
+    display: inline-block; padding: 5px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 700; margin-bottom: 12px; letter-spacing: 0.5px;
+  }
+  .flow-label.before { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .flow-label.after { background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+
+  .flow {
+    display: flex; align-items: center; gap: 0; flex-wrap: wrap;
+    padding: 16px; background: #1e293b; border-radius: 12px; border: 1px solid #334155;
+  }
+  .flow-step {
+    padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 500;
+    text-align: center; min-width: 90px; line-height: 1.4;
+  }
+  .flow-step.manual { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+  .flow-step.semi { background: rgba(250,204,21,0.15); color: #fde68a; border: 1px solid rgba(250,204,21,0.25); }
+  .flow-step.auto { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
+  .flow-step.system { background: rgba(96,165,250,0.15); color: #93c5fd; border: 1px solid rgba(96,165,250,0.25); }
+  .flow-step.blocked { background: rgba(239,68,68,0.08); color: #f87171; border: 1px dashed rgba(239,68,68,0.4); }
+  .flow-step .sl { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; display: block; margin-bottom: 3px; }
+  .flow-arrow { color: #475569; font-size: 18px; padding: 0 5px; flex-shrink: 0; }
+
+  /* ── COST SECTION ── */
+  .cost-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;
+  }
+  .cost-card {
+    background: #1e293b; border-radius: 12px; padding: 24px; border: 1px solid #334155;
+  }
+  .cost-card h4 { font-size: 14px; margin-bottom: 16px; }
+  .cost-card h4.red { color: #f87171; }
+  .cost-card h4.green { color: #4ade80; }
+  .cost-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+  .cost-item:last-child { border-bottom: none; }
+  .cost-item .label { color: #94a3b8; }
+  .cost-item .val { font-weight: 600; }
+  .cost-item .val.red { color: #f87171; }
+  .cost-item .val.green { color: #4ade80; }
+  .cost-item .val.gray { color: #64748b; }
+  .cost-total { display: flex; justify-content: space-between; padding: 12px 0; margin-top: 8px; border-top: 2px solid #334155; font-size: 15px; font-weight: 700; }
+
+  /* ── KEY QUESTION ── */
+  .question-box {
+    background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.25); border-radius: 12px;
+    padding: 24px; margin-bottom: 32px;
+  }
+  .question-box h3 { color: #60a5fa; font-size: 15px; margin-bottom: 12px; }
+  .question-box p { font-size: 13px; color: #cbd5e1; line-height: 1.7; margin-bottom: 8px; }
+  .question-box .option {
+    background: #1e293b; border-radius: 8px; padding: 14px 16px; margin: 8px 0;
+    border: 1px solid #334155; font-size: 13px; line-height: 1.6;
+  }
+  .question-box .option strong { color: #f8fafc; }
+  .question-box .option .pro { color: #4ade80; font-size: 12px; }
+  .question-box .option .con { color: #f87171; font-size: 12px; }
+
+  /* ── SUMMARY CARDS ── */
+  .summary-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;
+  }
+  .s-card {
+    background: #1e293b; border-radius: 12px; padding: 20px; text-align: center;
+    border: 1px solid #334155; position: relative; overflow: hidden;
+  }
+  .s-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .s-card.green::before { background: #22c55e; }
+  .s-card.yellow::before { background: #eab308; }
+  .s-card.red::before { background: #ef4444; }
+  .s-card .s-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .s-card .s-value { font-size: 24px; font-weight: 800; }
+  .s-card .s-sub { font-size: 12px; color: #64748b; margin-top: 4px; }
+
+  .footer { text-align: center; padding: 32px; color: #475569; font-size: 12px; border-top: 1px solid #1e293b; margin-top: 24px; }
+
+  @media (max-width: 768px) {
+    .cost-grid, .summary-row { grid-template-columns: 1fr; }
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>덕우무역 네이버 자동화 — 현실판</h1>
+  <p>희망사항 제거. 유플랫 API 없음 제약 반영. 진짜 가능한 것만.</p>
+</div>
+
+<div class="container">
+
+  <!-- CONSTRAINT BANNER -->
+  <div class="constraint-banner">
+    <h3>핵심 제약 조건 — 이걸 모르면 설계가 다 틀어짐</h3>
+    <ul>
+      <li><strong>유플랫 API 없음</strong> — 데이터 추출은 엑셀 수동 다운로드뿐. 가공 결과를 다시 넣는 것도 수동.</li>
+      <li><strong>샵마인 API 없음</strong> — CS/주문/정산 데이터도 엑셀 수동 추출뿐.</li>
+      <li><strong>유플랫 우회하면 깨지는 것들</strong> — 재고 실시간 연동, 매일 가격 변동 반영, 주문처리(UOS), 발주, 배송. 이걸 다 직접 구현해야 함.</li>
+      <li><strong>28.5만건 전량 순환은 비현실적</strong> — 실제 월 순환량 기준으로 봐야 함.</li>
+    </ul>
+    <div class="bottom-line">→ "풀 자동화"는 유플랫을 버리지 않는 한 불가능. 현실은 "가공 보조 자동화".</div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-row">
+    <div class="s-card green">
+      <div class="s-label">바로 가능</div>
+      <div class="s-value" style="color:#4ade80;">3건</div>
+      <div class="s-sub">이미지, 상품명 배치, 데이터 대시보드</div>
+    </div>
+    <div class="s-card yellow">
+      <div class="s-label">반만 가능 (유플랫 병목)</div>
+      <div class="s-value" style="color:#fbbf24;">3건</div>
+      <div class="s-sub">속성값, 키워드, 순환 추천</div>
+    </div>
+    <div class="s-card red">
+      <div class="s-label">ROI 안 맞음 / 불가</div>
+      <div class="s-value" style="color:#f87171;">2건</div>
+      <div class="s-sub">CS(10건/일), 쇼피파이</div>
+    </div>
+  </div>
+
+  <!-- VERDICT TABLE -->
+  <div class="section-title">📋 항목별 현실 판정</div>
+  <table class="verdict-table">
+    <thead>
+      <tr>
+        <th style="width:15%;">항목</th>
+        <th style="width:10%;" class="v">판정</th>
+        <th style="width:25%;">현재 (Before)</th>
+        <th style="width:25%;">자동화 후 (After)</th>
+        <th style="width:25%;">현실적 제약</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>이미지 가공</strong></td>
+        <td style="text-align:center;"><span class="v-yes">가능</span></td>
+        <td><span class="tag-before">알바 50원/건</span><br>캡처툴로 리사이즈+워터마크</td>
+        <td><span class="tag-after">Pillow 자동</span><br>리사이즈+워터마크 일괄 처리</td>
+        <td>유플랫 엑셀에서 이미지 URL 추출 가능하면 바로 적용. 가공된 이미지를 <strong>네이버 API로 직접 업로드</strong> 가능.</td>
+      </tr>
+      <tr>
+        <td><strong>상품명 배치화</strong></td>
+        <td style="text-align:center;"><span class="v-yes">가능</span></td>
+        <td><span class="tag-before">GPT/Gemini 건별 호출</span><br>이미 LLM 사용 중</td>
+        <td><span class="tag-after">배치 API 전환</span><br>동일 품질, 비용 50% 절감</td>
+        <td>이미 자체 프로그램에서 LLM 쓰고 있음. 배치 API 전환은 코드 수정만으로 가능. <strong>리스크 거의 없음.</strong></td>
+      </tr>
+      <tr>
+        <td><strong>판매 데이터<br>대시보드</strong></td>
+        <td style="text-align:center;"><span class="v-yes">가능</span></td>
+        <td><span class="tag-before">매출만 확인</span><br>샵마인→구글시트 수동</td>
+        <td><span class="tag-after">자동 수집+시각화</span><br>CTR, 전환율, 키워드 분석</td>
+        <td>네이버 커머스 API 키 보유 확인. 통계 API로 일별 자동 수집 → 구글시트 적재 가능. <strong>안형선 이사도 계획 중이던 것.</strong></td>
+      </tr>
+      <tr>
+        <td><strong>속성값 추출</strong></td>
+        <td style="text-align:center;"><span class="v-partial">반만</span></td>
+        <td><span class="tag-before">알바 80~100원/건</span><br>유플랫에서 수동 입력</td>
+        <td><span class="tag-limit">LLM으로 생성은 가능</span><br>입력은 여전히 수동</td>
+        <td><span class="tag-block">유플랫 API 없음</span> LLM이 속성값을 뽑아줘도, 그걸 유플랫에 넣는 건 사람이 해야 함. 엑셀로 뽑아놓으면 복붙은 빨라지지만 <strong>"건당 0원"은 거짓말</strong>.</td>
+      </tr>
+      <tr>
+        <td><strong>키워드 자동 조합</strong></td>
+        <td style="text-align:center;"><span class="v-partial">반만</span></td>
+        <td><span class="tag-before">API+자체 프로그램</span><br>1~40개 수동 입력</td>
+        <td><span class="tag-limit">조합은 자동, 입력은 수동</span><br>추천 키워드 엑셀 생성</td>
+        <td><span class="tag-block">유플랫 API 없음</span> 키워드 생성+순위화까지는 자동. 유플랫에 세팅하는 건 여전히 수동. 기존 자체 프로그램이 이미 비슷한 역할.</td>
+      </tr>
+      <tr>
+        <td><strong>순환 추천</strong></td>
+        <td style="text-align:center;"><span class="v-partial">반만</span></td>
+        <td><span class="tag-before">등급 변화 시 수동 판단</span><br>일 2만건 등록 가능</td>
+        <td><span class="tag-limit">스코어링으로 추천</span><br>실행은 유플랫 수동</td>
+        <td>Phase 2 대시보드 데이터 기반으로 "내릴 상품 / 올릴 상품" 리스트 자동 생성은 가능. <strong>실제 등록/삭제는 유플랫 통해 수동.</strong></td>
+      </tr>
+      <tr>
+        <td><strong>CS 자동화</strong></td>
+        <td style="text-align:center;"><span class="v-skip">ROI ✕</span></td>
+        <td><span class="tag-before">2명, 10건/일</span><br>템플릿+수동 발송</td>
+        <td>—</td>
+        <td><strong>하루 10건</strong>에 LLM 시스템 구축은 과잉 투자. 건당 5분 절약 = 하루 50분. 개발비 대비 ROI 안 맞음. 기존 템플릿으로 충분.</td>
+      </tr>
+      <tr>
+        <td><strong>쇼피파이</strong></td>
+        <td style="text-align:center;"><span class="v-no">불가</span></td>
+        <td><span class="tag-before">유플랫/샵마인 미지원</span><br>영문 데이터 없음</td>
+        <td>—</td>
+        <td>현재 시스템 완전 미지원. 영문 상품 데이터 없음. 아마존도 위탁 불가로 재검토 중. <strong>별도 프로젝트로 분리해야 함.</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- FLOW: REALISTIC -->
+  <div class="section-title">🔄 현실적 프로세스 비교</div>
+  <div class="flow-section">
+    <div class="flow-label before">BEFORE — 전부 수동 또는 반자동</div>
+    <div class="flow">
+      <div class="flow-step system"><span class="sl">자동</span>도매처 크롤링<br>(유플랫)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step manual"><span class="sl">자체 프로그램</span>카테고리 매핑</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step semi"><span class="sl">반자동</span>상품명 수정<br>(GPT 건별)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step manual"><span class="sl">수동 입력</span>키워드 1~40개</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step manual"><span class="sl">알바 50원</span>이미지 가공</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step manual"><span class="sl">알바 80원</span>속성값 입력</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step semi"><span class="sl">반자동</span>유플랫 등록</div>
+    </div>
+  </div>
+
+  <div class="flow-section">
+    <div class="flow-label after">AFTER — 현실적 자동화 (유플랫 유지)</div>
+    <div class="flow">
+      <div class="flow-step system"><span class="sl">자동</span>도매처 크롤링<br>(유플랫)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step semi"><span class="sl">기존 유지</span>카테고리 매핑<br>(자체 프로그램 90%)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step auto"><span class="sl">✅ 개선</span>상품명 수정<br>(GPT 배치)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step semi"><span class="sl">⚡ 반개선</span>키워드 자동 생성<br>(입력은 수동)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step auto"><span class="sl">✅ 개선</span>이미지 가공<br>(Pillow 자동)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step semi"><span class="sl">⚡ 반개선</span>속성값 LLM 생성<br>(입력은 수동)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step semi"><span class="sl">기존 유지</span>유플랫 등록</div>
+    </div>
+  </div>
+
+  <!-- COST: REALISTIC -->
+  <div class="section-title">💰 현실적 비용 비교</div>
+  <p style="font-size:13px;color:#94a3b8;margin-bottom:16px;">월 순환량을 모르므로 "건당 단가" 기준으로 비교합니다. 28.5만 전량이 아닌 실제 처리량에 곱하면 됩니다.</p>
+
+  <div class="cost-grid">
+    <div class="cost-card">
+      <h4 class="red">BEFORE — 건당 비용</h4>
+      <div class="cost-item"><span class="label">이미지 가공</span><span class="val red">50원/건 (알바)</span></div>
+      <div class="cost-item"><span class="label">속성값 입력</span><span class="val red">80~100원/건 (알바)</span></div>
+      <div class="cost-item"><span class="label">상품명 가공</span><span class="val red">GPT 건별 호출 (~2~3원)</span></div>
+      <div class="cost-item"><span class="label">키워드 선정</span><span class="val red">시간 비용 (수동 입력)</span></div>
+      <div class="cost-item"><span class="label">데이터 분석</span><span class="val red">매출만 확인 (수동)</span></div>
+      <div class="cost-total"><span style="color:#f87171;">건당 합계</span><span style="color:#f87171;">~133~153원 + 시간</span></div>
+    </div>
+    <div class="cost-card">
+      <h4 class="green">AFTER — 건당 비용 (현실적)</h4>
+      <div class="cost-item"><span class="label">이미지 가공</span><span class="val green">~0.1원 (서버) ✅ 완전 자동</span></div>
+      <div class="cost-item"><span class="label">속성값 추출</span><span class="val" style="color:#fbbf24;">~1원 (LLM) + 복붙 시간 ⚡</span></div>
+      <div class="cost-item"><span class="label">상품명 가공</span><span class="val green">~1원 (배치) ✅ 완전 자동</span></div>
+      <div class="cost-item"><span class="label">키워드 생성</span><span class="val" style="color:#fbbf24;">자동 생성 + 입력 시간 ⚡</span></div>
+      <div class="cost-item"><span class="label">데이터 분석</span><span class="val green">자동 대시보드 ✅</span></div>
+      <div class="cost-total"><span style="color:#4ade80;">건당 합계</span><span style="color:#4ade80;">~2원 + 입력 시간</span></div>
+    </div>
+  </div>
+
+  <div style="background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155;margin-bottom:32px;">
+    <div style="font-size:14px;font-weight:700;color:#f8fafc;margin-bottom:12px;">현실적 절감 (이미지+상품명만 확실)</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+      <div>
+        <span style="font-size:12px;color:#94a3b8;">이미지 가공</span><br>
+        <span style="font-size:20px;font-weight:800;color:#4ade80;">50원 → ~0원</span>
+        <span style="font-size:12px;color:#4ade80;"> (99% 절감 확실)</span>
+      </div>
+      <div>
+        <span style="font-size:12px;color:#94a3b8;">상품명 API 비용</span><br>
+        <span style="font-size:20px;font-weight:800;color:#4ade80;">건별 → 배치</span>
+        <span style="font-size:12px;color:#4ade80;"> (50% 절감 확실)</span>
+      </div>
+      <div>
+        <span style="font-size:12px;color:#94a3b8;">속성값</span><br>
+        <span style="font-size:20px;font-weight:800;color:#fbbf24;">80원 → ?</span>
+        <span style="font-size:12px;color:#fbbf24;"> (입력 수동 잔존)</span>
+      </div>
+      <div>
+        <span style="font-size:12px;color:#94a3b8;">키워드</span><br>
+        <span style="font-size:20px;font-weight:800;color:#fbbf24;">시간 → ?</span>
+        <span style="font-size:12px;color:#fbbf24;"> (입력 수동 잔존)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY QUESTION -->
+  <div class="section-title">🔑 핵심 판단 포인트</div>
+  <div class="question-box">
+    <h3>유플랫을 유지할 것인가, 버릴 것인가?</h3>
+    <p>모든 자동화 설계가 이 결정에 달려 있습니다.</p>
+    <div class="option">
+      <strong>A. 유플랫 유지 (현실적 선택)</strong><br>
+      <span class="pro">✅ 재고 연동, 가격 변동, 주문/발주/배송 그대로 사용</span><br>
+      <span class="pro">✅ 기존 51곳 도매처 크롤링 유지</span><br>
+      <span class="pro">✅ 리스크 낮음 — 보조 자동화만 추가</span><br>
+      <span class="con">✕ 가공 결과 → 유플랫 입력은 여전히 수동 (속성값, 키워드)</span><br>
+      <span class="con">✕ 유플랫 월 79.8만원 계속 지출</span><br>
+      <span class="con">✕ "풀 자동화"는 원천적으로 불가</span>
+    </div>
+    <div class="option">
+      <strong>B. 유플랫 제거 + 네이버 API 직접 (야심적 선택)</strong><br>
+      <span class="pro">✅ 가공~등록까지 완전 자동화 가능</span><br>
+      <span class="pro">✅ 유플랫 월 79.8만원 절약</span><br>
+      <span class="con">✕ 51곳 도매처 크롤링을 직접 구축해야 함 (대공사)</span><br>
+      <span class="con">✕ 재고 연동, 가격 변동, 주문처리, 발주, 배송 전부 직접 구현</span><br>
+      <span class="con">✕ 개발 기간 수개월 + 안정화 리스크</span><br>
+      <span class="con">✕ 안형선 이사 자체 프로그램들과 충돌 가능</span>
+    </div>
+    <div class="option">
+      <strong>C. 유플랫 엑셀 대량 임포트 가능 여부 확인 (절충안)</strong><br>
+      <span class="pro">✅ 유플랫이 엑셀 "가져오기"를 지원하면 → 가공 자동 + 업로드 자동</span><br>
+      <span class="pro">✅ 기존 크롤링/재고/주문 유지하면서 가공만 외부 처리</span><br>
+      <span class="con">✕ 유플랫이 지원하는지 아직 확인 안 됨</span><br>
+      <span style="color:#60a5fa;font-size:12px;font-weight:700;">→ 안형선 이사에게 확인 필요: "유플랫에 엑셀로 상품 데이터를 대량 업로드(임포트)할 수 있습니까?"</span>
+    </div>
+  </div>
+
+  <!-- NEXT STEPS -->
+  <div class="section-title">📌 다음 단계</div>
+  <table class="verdict-table">
+    <thead>
+      <tr>
+        <th style="width:8%;">No.</th>
+        <th style="width:35%;">확인/실행 사항</th>
+        <th style="width:15%;">담당</th>
+        <th style="width:42%;">이유</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1</strong></td>
+        <td><strong>유플랫 엑셀 임포트(가져오기) 가능 여부</strong></td>
+        <td>안형선 이사</td>
+        <td>이게 되면 B안 없이도 속성값/키워드 자동 입력 가능. <strong>전체 설계가 바뀜.</strong></td>
+      </tr>
+      <tr>
+        <td><strong>2</strong></td>
+        <td><strong>월 실제 순환량 확인</strong></td>
+        <td>안형선 이사</td>
+        <td>28.5만 전량이 아닌 실제 월 처리량을 알아야 비용 추정 가능.</td>
+      </tr>
+      <tr>
+        <td><strong>3</strong></td>
+        <td><strong>유플랫 엑셀 샘플 10건 수령</strong></td>
+        <td>안형선 이사</td>
+        <td>LLM 속성 추출 정확도를 실제로 테스트. 95%인지 70%인지 확인.</td>
+      </tr>
+      <tr>
+        <td><strong>4</strong></td>
+        <td><strong>이미지 자동 가공 파일럿</strong></td>
+        <td>브라이튼</td>
+        <td>확실히 가능한 것부터 먼저 실행. 리스크 제로.</td>
+      </tr>
+      <tr>
+        <td><strong>5</strong></td>
+        <td><strong>상품명 배치 API 전환</strong></td>
+        <td>브라이튼</td>
+        <td>기존 프로그램 코드 수정만으로 비용 50% 절감. 리스크 제로.</td>
+      </tr>
+      <tr>
+        <td><strong>6</strong></td>
+        <td><strong>판매 데이터 대시보드 구축</strong></td>
+        <td>브라이튼</td>
+        <td>네이버 API 키 받으면 바로 착수 가능. 안형선 이사도 원하던 것.</td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+
+<div class="footer">
+  BRIGHTEN PTE. LTD. — CONFIDENTIAL — 2026년 4월<br>
+  현실적 자동화 범위 분석 | 유플랫 API 미제공 제약 반영
+</div>
+
+</body>
+</html>

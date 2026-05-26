@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>덕우 거래처 패턴 분석</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+.container { max-width: 1500px; margin: 0 auto; padding: 32px 20px; }
+h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+h1 span { color: #f97316; }
+.subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 24px; }
+
+/* Drop Zone */
+.dropzone {
+  border: 2px dashed #334155; border-radius: 16px; padding: 40px; text-align: center;
+  cursor: pointer; transition: all 0.2s; background: #1e293b; margin-bottom: 20px;
+}
+.dropzone:hover, .dropzone.dragover { border-color: #f97316; box-shadow: 0 0 30px rgba(249,115,22,0.1); }
+.dropzone .dz-icon { font-size: 36px; margin-bottom: 10px; }
+.dropzone .dz-text { font-size: 15px; color: #94a3b8; }
+.dropzone .dz-text strong { color: #e2e8f0; }
+.dropzone .dz-hint { font-size: 12px; color: #475569; margin-top: 6px; }
+.dropzone input[type=file] { display: none; }
+.file-tag {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+  border-radius: 8px; font-size: 12px; font-weight: 600; margin-top: 14px;
+}
+.file-tag.ready { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+.file-tag.waiting { background: #1e293b; color: #475569; border: 1px solid #334155; }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+.tab-btn {
+  padding: 10px 24px; border: 1px solid #334155; border-radius: 10px 10px 0 0;
+  font-size: 13px; font-weight: 600; cursor: pointer; background: #1e293b; color: #64748b;
+  font-family: inherit; transition: all 0.15s; border-bottom: none;
+}
+.tab-btn:hover { color: #e2e8f0; }
+.tab-btn.active { background: #0f172a; color: #f97316; border-color: #f97316; border-bottom: 2px solid #0f172a; }
+
+/* Settings */
+.settings-bar {
+  background: #1e293b; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
+  display: flex; gap: 24px; align-items: center; flex-wrap: wrap;
+}
+.setting-group { display: flex; align-items: center; gap: 8px; }
+.setting-group label { font-size: 12px; color: #94a3b8; white-space: nowrap; }
+.setting-group input, .setting-group select {
+  background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px 12px;
+  color: #e2e8f0; font-size: 13px; font-family: inherit; outline: none; width: 80px;
+}
+.setting-group input:focus { border-color: #f97316; }
+.btn-run {
+  padding: 14px 40px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600;
+  cursor: pointer; background: linear-gradient(135deg, #f97316, #ea580c); color: white;
+  font-family: inherit; transition: transform 0.1s, opacity 0.2s;
+}
+.btn-run:hover { transform: scale(1.02); }
+.btn-run:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* Summary Cards */
+.summary-cards { display: none; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.summary-cards.show { display: grid; }
+.s-card {
+  background: #1e293b; border-radius: 12px; padding: 16px; text-align: center;
+  border-left: 4px solid #334155;
+}
+.s-card .s-count { font-size: 28px; font-weight: 700; }
+.s-card .s-label { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+.s-card.total { border-color: #f97316; } .s-card.total .s-count { color: #f97316; }
+.s-card.active-c { border-color: #22c55e; } .s-card.active-c .s-count { color: #22c55e; }
+.s-card.stopped { border-color: #ef4444; } .s-card.stopped .s-count { color: #ef4444; }
+.s-card.items { border-color: #3b82f6; } .s-card.items .s-count { color: #3b82f6; }
+
+/* Filter bar */
+.filter-bar { display: none; gap: 8px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+.filter-bar.show { display: flex; }
+.filter-bar .filter-label { font-size: 12px; color: #64748b; margin-right: 4px; }
+.filter-btn {
+  padding: 6px 14px; border: 1px solid #334155; border-radius: 8px; font-size: 12px;
+  font-weight: 600; cursor: pointer; background: #1e293b; color: #64748b;
+  font-family: inherit; transition: all 0.15s;
+}
+.filter-btn:hover { border-color: #475569; color: #e2e8f0; }
+.filter-btn.active { border-color: #f97316; color: #f97316; background: #1c1206; }
+.filter-count { font-size: 12px; color: #475569; margin-left: auto; }
+
+/* Search */
+.search-box {
+  background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px 14px;
+  color: #e2e8f0; font-size: 13px; font-family: inherit; outline: none; width: 200px;
+}
+.search-box:focus { border-color: #f97316; }
+
+/* Badges */
+.badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+.badge-active { background: #052e16; color: #4ade80; }
+.badge-warning { background: #431407; color: #fb923c; }
+.badge-stopped { background: #450a0a; color: #f87171; }
+
+/* Gap bar */
+.gap-bar-wrap { width: 60px; height: 6px; background: #334155; border-radius: 3px; display: inline-block; vertical-align: middle; margin-right: 6px; }
+.gap-bar { height: 100%; border-radius: 3px; }
+
+/* Table */
+.result-wrap { display: none; background: #1e293b; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+.result-wrap.show { display: block; }
+.r-table { width: 100%; border-collapse: collapse; }
+.r-table thead th {
+  padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.3px; color: #64748b; background: #0f172a;
+  border-bottom: 1px solid #334155; white-space: nowrap; cursor: pointer; user-select: none;
+}
+.r-table thead th:hover { color: #f97316; }
+.r-table thead th .sort-arrow { margin-left: 4px; font-size: 10px; }
+.r-table tbody td { padding: 9px 12px; font-size: 12px; border-bottom: 1px solid #1a2332; white-space: nowrap; }
+.r-table tbody tr:hover { background: #172033; }
+.r-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Download */
+.btn-download {
+  padding: 12px 28px; border: 1px solid #334155; border-radius: 12px; font-size: 14px;
+  font-weight: 600; cursor: pointer; background: #1e293b; color: #94a3b8; font-family: inherit;
+  transition: all 0.2s; display: none; margin-bottom: 20px;
+}
+.btn-download.show { display: inline-block; }
+.btn-download:hover { border-color: #f97316; color: #f97316; }
+
+/* Log */
+.log { background: #1e293b; border-radius: 12px; padding: 16px; margin-bottom: 20px; display: none; max-height: 120px; overflow-y: auto; }
+.log.show { display: block; }
+.log p { font-size: 11px; color: #64748b; margin-bottom: 2px; }
+.log p.warn { color: #fbbf24; }
+
+@media (max-width: 768px) {
+  .summary-cards { grid-template-columns: repeat(2, 1fr); }
+  .settings-bar { flex-direction: column; gap: 12px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>덕우 <span>거래처 패턴</span></h1>
+  <p class="subtitle">재고수불부 업로드 → 거래처별 구매 이력 분석 → 주문 중단 거래처 탐지</p>
+
+  <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
+    <div class="dz-icon">📊</div>
+    <div class="dz-text"><strong>재고수불부</strong> 엑셀 파일을 드래그하거나 클릭</div>
+    <div class="dz-hint">eCount ERP 재고수불부 (.xlsx)</div>
+    <input type="file" id="file-input" accept=".xlsx,.xls">
+    <div><span class="file-tag waiting" id="tag-file">📊 재고수불부</span></div>
+  </div>
+
+  <div class="settings-bar">
+    <div class="setting-group">
+      <label>중단 기준 (개월)</label>
+      <input type="number" id="gap-threshold" value="2" min="1" max="12">
+    </div>
+    <div class="setting-group">
+      <label>최소 거래수량</label>
+      <input type="number" id="min-qty" value="0" min="0">
+    </div>
+    <button class="btn-run" id="btn-run" disabled onclick="runAnalysis()">분석 실행</button>
+  </div>
+
+  <div class="log" id="log"></div>
+
+  <div class="summary-cards" id="summary">
+    <div class="s-card total"><div class="s-count" id="cnt-total">0</div><div class="s-label">전체 거래처</div></div>
+    <div class="s-card active-c"><div class="s-count" id="cnt-active">0</div><div class="s-label">활성 거래처</div></div>
+    <div class="s-card stopped"><div class="s-count" id="cnt-stopped">0</div><div class="s-label">주문 중단</div></div>
+    <div class="s-card items"><div class="s-count" id="cnt-pairs">0</div><div class="s-label">거래처×품목</div></div>
+  </div>
+
+  <div class="tabs" id="tabs" style="display:none;">
+    <button class="tab-btn active" data-tab="detail" onclick="switchTab(this)">상세 (거래처×품목)</button>
+    <button class="tab-btn" data-tab="summary" onclick="switchTab(this)">거래처 요약</button>
+  </div>
+
+  <div class="filter-bar" id="filter-bar">
+    <span class="filter-label">상태</span>
+    <button class="filter-btn active" data-f="all" onclick="toggleFilter(this)">전체</button>
+    <button class="filter-btn" data-f="active" onclick="toggleFilter(this)">🟢 활성</button>
+    <button class="filter-btn" data-f="warning" onclick="toggleFilter(this)">🟠 주의</button>
+    <button class="filter-btn" data-f="stopped" onclick="toggleFilter(this)">🔴 중단</button>
+    <input class="search-box" id="search-box" placeholder="거래처 검색..." oninput="renderCurrentTab()">
+    <span class="filter-count" id="filter-count"></span>
+  </div>
+
+  <button class="btn-download" id="btn-download" onclick="downloadExcel()">📥 엑셀 다운로드</button>
+
+  <div class="result-wrap" id="result-wrap">
+    <table class="r-table" id="r-table">
+      <thead><tr id="thead-row"></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+let fileData = null;
+let detailResults = [];
+let summaryResults = [];
+let currentTab = 'detail';
+let activeFilters = new Set();
+let sortCol = null, sortAsc = true;
+
+// ============ FILE UPLOAD ============
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('file-input');
+fileInput.addEventListener('change', e => { if (e.target.files[0]) setFile(e.target.files[0]); });
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault(); dropzone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+});
+
+function setFile(f) {
+  fileData = f;
+  const tag = document.getElementById('tag-file');
+  tag.className = 'file-tag ready';
+  tag.textContent = '✓ ' + f.name;
+  dropzone.querySelector('.dz-text').innerHTML = '<strong>파일 준비 완료</strong> — 분석 실행을 누르세요';
+  document.getElementById('btn-run').disabled = false;
+}
+
+function log(msg, warn) {
+  const el = document.getElementById('log');
+  el.classList.add('show');
+  const p = document.createElement('p');
+  if (warn) p.className = 'warn';
+  p.textContent = msg;
+  el.appendChild(p);
+  el.scrollTop = el.scrollHeight;
+}
+
+function readFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const wb = XLSX.read(e.target.result, { type: 'array' });
+        resolve(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 }));
+      } catch (err) { reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+// ============ ITEM NAME LOOKUP (from purchase-tool INV_DATA) ============
+const ITEM_NAMES = {"70377":"B-2 (- driver type)","00007":"GF063P","00008":"GF063P","00009":"GF063P","00011":"GF063P","00012":"GF063P","00013":"GF063P","00015":"GF063P","00016":"GF063P","00019":"GF063P","00109":"RV24YN 20S","00110":"RV24YN 20S","00111":"RV24YN 20S","00113":"RV24YN 20S","00114":"RV24YN 20S","00115":"RV24YN 20S","00118":"RV24YN 20S","00119":"RV24YN 20S","00120":"RV24YN 20S","00123":"RV24YN 20S","00135":"RV30YN 20S","00138":"RV30YN 20S","00157":"RA25Y 20S","00168":"RA30Y 25S","00171":"RA30Y 25S","00247":"CT-6EP","00250":"CT-6EP","00299":"CT-94EW","00300":"CT-94EW","00301":"CT-94EW","00302":"CT-94EW","00303":"CT-94EW","00304":"CT-94EW","00306":"CT-94EW","00307":"CT-94EW","00336":"CT-20EP","00337":"CT-20EP","00384":"RJ-13P","00386":"RJ-13P","00387":"RJ-13P","00388":"RJ-13P","00389":"RJ-13P","00391":"RJ-13P","00461":"M-22S10","00465":"JP-30","00475":"J40S","00476":"J40S","00477":"J40S","00478":"J40S","00484":"J50S","00485":"J50S","00486":"J50S","00487":"J50S","00525":"FT-63EP","00529":"FT-63EP","00530":"FT-63EP","00540":"3590S-6-501L","00541":"3590S-6-102L","00542":"3590S-6-202L","00543":"3590S-6-502L","00544":"3590S-6-103L","00545":"3590S-6-203L","00546":"3590S-6-503L","00547":"3590S-6-104L","00891":"B-2 (wrench type)","00918":"명판","04074":"RBM","04148":"2694"};
+
+// ============ ANALYSIS ============
+async function runAnalysis() {
+  const btn = document.getElementById('btn-run');
+  btn.disabled = true; btn.textContent = '분석 중...';
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('log').classList.remove('show');
+  detailResults = [];
+  summaryResults = [];
+  sortCol = null;
+
+  try {
+    const GAP_TH = Number(document.getElementById('gap-threshold').value) || 2;
+    const MIN_QTY = Number(document.getElementById('min-qty').value) || 0;
+
+    const data = await readFile(fileData);
+    log(`파일 로드: ${data.length}행`);
+
+    // Parse 재고수불부
+    const transactions = [];
+    let cc = null, itemName = '';
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      if (!row || !row[0]) continue;
+      const a = String(row[0]);
+      if (a.startsWith('회사명')) {
+        const m = a.match(/\((\d+)\)\s*$/);
+        if (m) {
+          cc = m[1].padStart(5, '0');
+          // extract item name from header if possible
+          const nm = a.match(/품목명\s*:\s*([^,\n]+)/);
+          itemName = nm ? nm[1].trim() : (ITEM_NAMES[cc] || '');
+        }
+        continue;
+      }
+      if (!cc) continue;
+      if (a === '날짜' || a === '전일재고') continue;
+      if (a.match(/^\d{4}\/\d{2}\s*계$/) || a === '합계' || a === '합 계') continue;
+      if (a.match(/^\d{4}\/\d{2}\/\d{2}\s+\d{2}:/)) { cc = null; continue; }
+      const dm = a.match(/^(\d{4})\/(\d{2})\/\d{2}/);
+      if (dm) {
+        const month = dm[1] + '/' + dm[2];
+        const cust = row[2] ? String(row[2]).trim() : '';
+        const outQty = Number(row[5]) || 0;
+        if (outQty > 0 && cust) {
+          transactions.push({ code: cc, name: itemName, cust, month, qty: outQty });
+        }
+      }
+    }
+    log(`거래 건수: ${transactions.length}건`);
+
+    const allMonths = [...new Set(transactions.map(t => t.month))].sort();
+    const latestMonth = allMonths[allMonths.length - 1];
+    const earliestMonth = allMonths[0];
+    log(`기간: ${earliestMonth} ~ ${latestMonth} (${allMonths.length}개월)`);
+
+    // Group by customer + item
+    const groups = {};
+    for (const t of transactions) {
+      const key = `${t.cust}|||${t.code}`;
+      if (!groups[key]) groups[key] = { cust: t.cust, code: t.code, name: t.name, months: {}, totalQty: 0 };
+      groups[key].totalQty += t.qty;
+      if (!groups[key].months[t.month]) groups[key].months[t.month] = 0;
+      groups[key].months[t.month] += t.qty;
+    }
+
+    // Build detail results
+    for (const g of Object.values(groups)) {
+      if (g.totalQty < MIN_QTY) continue;
+      const sortedM = Object.keys(g.months).sort();
+      const lastMonth = sortedM[sortedM.length - 1];
+      const firstMonth = sortedM[0];
+      const [ly, lm] = lastMonth.split('/').map(Number);
+      const [ey, em] = latestMonth.split('/').map(Number);
+      const gapMonths = (ey - ly) * 12 + (em - lm);
+      const monthlyAvg = Math.round(g.totalQty / allMonths.length * 10) / 10;
+
+      let status;
+      if (gapMonths === 0) status = 'active';
+      else if (gapMonths < GAP_TH) status = 'warning';
+      else status = 'stopped';
+
+      detailResults.push({
+        status, cust: g.cust, code: g.code, name: g.name || ITEM_NAMES[g.code] || '',
+        totalQty: g.totalQty, monthlyAvg, activeMonths: sortedM.length,
+        firstMonth, lastMonth, gapMonths,
+        monthBreakdown: allMonths.map(m => g.months[m] || 0)
+      });
+    }
+
+    detailResults.sort((a, b) => b.gapMonths - a.gapMonths || b.totalQty - a.totalQty);
+    log(`분석 완료: ${detailResults.length}개 거래처×품목 조합`);
+
+    // Build summary (by customer)
+    const custMap = {};
+    for (const r of detailResults) {
+      if (!custMap[r.cust]) custMap[r.cust] = {
+        cust: r.cust, items: 0, totalQty: 0, activeItems: 0, stoppedItems: 0,
+        lastMonth: '', maxGap: 0
+      };
+      const c = custMap[r.cust];
+      c.items++;
+      c.totalQty += r.totalQty;
+      if (r.status === 'active') c.activeItems++;
+      if (r.status === 'stopped') c.stoppedItems++;
+      if (r.lastMonth > c.lastMonth) c.lastMonth = r.lastMonth;
+      c.maxGap = Math.max(c.maxGap, r.gapMonths);
+    }
+    for (const c of Object.values(custMap)) {
+      if (c.stoppedItems > 0 && c.activeItems === 0) c.status = 'stopped';
+      else if (c.stoppedItems > 0) c.status = 'warning';
+      else c.status = 'active';
+      summaryResults.push(c);
+    }
+    summaryResults.sort((a, b) => b.maxGap - a.maxGap || b.totalQty - a.totalQty);
+
+    // Update counts
+    const uniqueCust = new Set(detailResults.map(r => r.cust));
+    const activeCust = new Set(detailResults.filter(r => r.status === 'active').map(r => r.cust));
+    const stoppedOnly = [...uniqueCust].filter(c => !activeCust.has(c));
+
+    document.getElementById('cnt-total').textContent = uniqueCust.size;
+    document.getElementById('cnt-active').textContent = activeCust.size;
+    document.getElementById('cnt-stopped').textContent = stoppedOnly.length;
+    document.getElementById('cnt-pairs').textContent = detailResults.length;
+    document.getElementById('summary').classList.add('show');
+    document.getElementById('tabs').style.display = 'flex';
+    document.getElementById('filter-bar').classList.add('show');
+    document.getElementById('btn-download').classList.add('show');
+
+    activeFilters.clear();
+    syncFilterBar();
+    renderCurrentTab();
+
+  } catch (err) {
+    log('오류: ' + err.message, true);
+    console.error(err);
+  }
+  btn.disabled = false; btn.textContent = '분석 실행';
+}
+
+// ============ TABS ============
+function switchTab(btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentTab = btn.dataset.tab;
+  sortCol = null; sortAsc = true;
+  renderCurrentTab();
+}
+
+// ============ FILTER ============
+function toggleFilter(btn) {
+  const f = btn.dataset.f;
+  if (f === 'all') activeFilters.clear();
+  else { if (activeFilters.has(f)) activeFilters.delete(f); else activeFilters.add(f); }
+  syncFilterBar();
+  renderCurrentTab();
+}
+function syncFilterBar() {
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    const f = btn.dataset.f;
+    if (f === 'all') btn.classList.toggle('active', activeFilters.size === 0);
+    else btn.classList.toggle('active', activeFilters.has(f));
+  });
+}
+
+// ============ COLUMNS ============
+const DETAIL_COLS = [
+  { key: 'status', label: '상태', w: 60 },
+  { key: 'cust', label: '거래처', w: 160 },
+  { key: 'code', label: '품목코드', w: 70 },
+  { key: 'name', label: '품목명', w: 120 },
+  { key: 'totalQty', label: '총수량', w: 70, num: true },
+  { key: 'monthlyAvg', label: '월평균', w: 60, num: true },
+  { key: 'activeMonths', label: '거래월수', w: 60, num: true },
+  { key: 'firstMonth', label: '첫 거래', w: 70 },
+  { key: 'lastMonth', label: '마지막', w: 70 },
+  { key: 'gapMonths', label: '공백(월)', w: 70, num: true }
+];
+const SUMMARY_COLS = [
+  { key: 'status', label: '상태', w: 60 },
+  { key: 'cust', label: '거래처', w: 200 },
+  { key: 'items', label: '품목수', w: 60, num: true },
+  { key: 'totalQty', label: '총수량', w: 80, num: true },
+  { key: 'activeItems', label: '활성품목', w: 60, num: true },
+  { key: 'stoppedItems', label: '중단품목', w: 60, num: true },
+  { key: 'lastMonth', label: '마지막거래', w: 80 },
+  { key: 'maxGap', label: '최대공백(월)', w: 80, num: true }
+];
+
+function renderCurrentTab() {
+  const cols = currentTab === 'detail' ? DETAIL_COLS : SUMMARY_COLS;
+  const raw = currentTab === 'detail' ? detailResults : summaryResults;
+  const search = document.getElementById('search-box').value.trim().toLowerCase();
+
+  let data = raw;
+  if (activeFilters.size > 0) data = data.filter(r => activeFilters.has(r.status));
+  if (search) data = data.filter(r => r.cust.toLowerCase().includes(search));
+
+  // sort
+  if (sortCol !== null && cols[sortCol]) {
+    const col = cols[sortCol];
+    data = [...data].sort((a, b) => {
+      let va = a[col.key], vb = b[col.key];
+      if (col.num) { va = Number(va)||0; vb = Number(vb)||0; return sortAsc ? va - vb : vb - va; }
+      va = String(va||''); vb = String(vb||'');
+      return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    });
+  }
+
+  document.getElementById('filter-count').textContent = `${data.length} / ${raw.length}개 표시`;
+
+  // header
+  const thead = document.getElementById('thead-row');
+  thead.innerHTML = '';
+  cols.forEach((col, i) => {
+    const th = document.createElement('th');
+    th.textContent = col.label;
+    if (sortCol === i) th.innerHTML += `<span class="sort-arrow">${sortAsc ? '▲' : '▼'}</span>`;
+    th.onclick = () => { if (sortCol === i) sortAsc = !sortAsc; else { sortCol = i; sortAsc = true; } renderCurrentTab(); };
+    thead.appendChild(th);
+  });
+
+  // body
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  data.forEach(r => {
+    const tr = document.createElement('tr');
+    cols.forEach(col => {
+      const td = document.createElement('td');
+      if (col.key === 'status') {
+        const labels = { active: '활성', warning: '주의', stopped: '중단' };
+        td.innerHTML = `<span class="badge badge-${r.status}">${labels[r.status]}</span>`;
+      } else if (col.key === 'gapMonths' || col.key === 'maxGap') {
+        const pct = Math.min(r[col.key] / 7 * 100, 100);
+        let color = '#22c55e';
+        if (r[col.key] >= 3) color = '#ef4444';
+        else if (r[col.key] >= 2) color = '#f97316';
+        td.innerHTML = `<span class="gap-bar-wrap"><span class="gap-bar" style="width:${pct}%;background:${color}"></span></span>${r[col.key]}`;
+      } else if (col.num) {
+        td.classList.add('num');
+        td.textContent = typeof r[col.key] === 'number' ? r[col.key].toLocaleString() : r[col.key];
+      } else {
+        td.textContent = r[col.key] || '';
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('result-wrap').classList.add('show');
+}
+
+// ============ EXCEL DOWNLOAD ============
+function downloadExcel() {
+  const wb = XLSX.utils.book_new();
+
+  // Detail sheet
+  const dHeaders = ['상태','거래처','품목코드','품목명','총수량','월평균','거래월수','첫거래','마지막거래','공백(월)'];
+  const dRows = [dHeaders];
+  const statusLabels = { active: '활성', warning: '주의', stopped: '중단' };
+  detailResults.forEach(r => {
+    dRows.push([statusLabels[r.status], r.cust, r.code, r.name, r.totalQty, r.monthlyAvg,
+      r.activeMonths, r.firstMonth, r.lastMonth, r.gapMonths]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dRows), '거래처×품목');
+
+  // Summary sheet
+  const sHeaders = ['상태','거래처','품목수','총수량','활성품목','중단품목','마지막거래','최대공백(월)'];
+  const sRows = [sHeaders];
+  summaryResults.forEach(r => {
+    sRows.push([statusLabels[r.status], r.cust, r.items, r.totalQty, r.activeItems, r.stoppedItems,
+      r.lastMonth, r.maxGap]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sRows), '거래처요약');
+
+  // Stopped only sheet
+  const stHeaders = ['거래처','품목코드','품목명','총수량','마지막거래','공백(월)'];
+  const stRows = [stHeaders];
+  detailResults.filter(r => r.status === 'stopped').forEach(r => {
+    stRows.push([r.cust, r.code, r.name, r.totalQty, r.lastMonth, r.gapMonths]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(stRows), '주문중단');
+
+  const now = new Date();
+  const ds = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  XLSX.writeFile(wb, `덕우_거래처패턴_${ds}.xlsx`);
+}
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 
 ## URL
 
-- **운영**: https://dukwoo-keyword.vercel.app (또는 dukwoo.ai 도메인 연결 후)
+- **운영**: https://dukwoo-keyword.vercel.app (또는 keywordlab.ai 도메인 연결 후)
 - **수정 후 반영**: `git push` → 약 1분 → 자동 라이브
 
 ## 정책 — 단일 소스

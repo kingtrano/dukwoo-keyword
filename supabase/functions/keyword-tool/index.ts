@@ -1145,18 +1145,13 @@ async function handleSeedExpand(body: any, cors: any) {
   }), { headers: { ...cors, "Content-Type": "application/json" } });
 }
 
-
-
-// HTML UI는 Vercel에서 서빙 (Supabase Edge Function은 text/html 미지원)
-const HTML_REDIRECT_URL = "https://dukwoo-keyword.vercel.app";
-
 Deno.serve(async (req: Request) => {
   const cors = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 
-  // GET → Vercel 프론트엔드로 리다이렉트 (Supabase Edge Function은 text/html 미지원)
+  // GET → Vercel로 리다이렉트 (Supabase Edge Function은 text/html 서빙 불가)
   if (req.method === "GET") {
-    return new Response(null, { status: 302, headers: { ...cors, "Location": HTML_REDIRECT_URL } });
+    return new Response(null, { status: 302, headers: { ...cors, "Location": "https://dukwoo-keyword.vercel.app" } });
   }
 
   if (req.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: { ...cors, "Content-Type": "application/json" } });

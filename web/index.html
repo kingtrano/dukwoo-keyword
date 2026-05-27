@@ -3149,25 +3149,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('.lang-toggle').forEach(b => b.textContent = _lang === 'ko' ? 'EN' : 'KO');
 
   // ============= 페이지 로드 시 세션 복원 =============
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    currentUser = session.user;
-    await refreshBalance();
-    await checkAdmin();
-    await loadFavorites();
-    await loadNotifyPrefs();
-    await loadWebhook();
-    // 자동 백업 (백그라운드)
-    setTimeout(() => checkAutoBackup().catch(e => console.error('auto backup error', e)), 3000);
+  // 전체를 try-catch로 보호 — 한 함수에서 에러 나도 로그인 핸들러 등록은 막지 않음
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      currentUser = session.user;
+      // 각 보조 로드는 개별 try-catch — 하나 실패해도 흐름 안 끊김
+      try { await refreshBalance(); } catch (e) { console.error('refreshBalance error', e); }
+      try { await checkAdmin(); } catch (e) { console.error('checkAdmin error', e); }
+      try { await loadFavorites(); } catch (e) { console.error('loadFavorites error', e); }
+      try { await loadNotifyPrefs(); } catch (e) { console.error('loadNotifyPrefs error', e); }
+      // 자동 백업 (백그라운드)
+      setTimeout(() => checkAutoBackup().catch(e => console.error('auto backup error', e)), 3000);
 
-    // 마지막 활성 페이지 복원 (로그인 상태일 때만)
-    const lastPage = sessionStorage.getItem('lastPage');
-    if (lastPage && PROTECTED_PAGES.includes(lastPage)) {
-      go(lastPage);
-    } else if (document.querySelector('.page.active')?.id === 'p-landing') {
-      // 랜딩에서 시작했지만 이미 로그인됐다면 dash로
-      go('dash');
+      // 마지막 활성 페이지 복원 (로그인 상태일 때만)
+      const lastPage = sessionStorage.getItem('lastPage');
+      if (lastPage && PROTECTED_PAGES.includes(lastPage)) {
+        go(lastPage);
+      } else if (document.querySelector('.page.active')?.id === 'p-landing') {
+        // 랜딩에서 시작했지만 이미 로그인됐다면 dash로
+        go('dash');
+      }
     }
+  } catch (e) {
+    console.error('session restore error', e);
   }
 
   // ============= 로그인 =============

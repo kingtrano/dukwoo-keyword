@@ -860,6 +860,25 @@
 </div>
 
 
+<!-- ═══════════ RECOVERY (비번 재설정) ═══════════ -->
+<div class="page" id="p-recovery">
+  <div class="nav">
+    <div class="nav-brand" onclick="go('landing')">keywordlab<span class="dot">.ai</span></div>
+  </div>
+  <div class="auth-wrap" onclick="authBackdropClick(event)">
+    <div class="auth-card">
+      <div class="auth-logo">keywordlab<span class="dot">.ai</span></div>
+      <div class="auth-desc">🔑 비밀번호 재설정</div>
+      <div id="recoveryMsg" style="display:none;background:#DBEAFE;border:1px solid #93C5FD;color:#1E40AF;padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:14px"></div>
+      <div class="field"><label>새 비밀번호 (8자 이상)</label><input type="password" id="recoveryNewPw" placeholder="••••••••"></div>
+      <div class="field"><label>새 비밀번호 확인</label><input type="password" id="recoveryNewPwConfirm" placeholder="••••••••"></div>
+      <button class="btn btn-primary btn-full" id="btnRecoverySubmit">비밀번호 변경 완료</button>
+      <a class="auth-switch" onclick="go('landing')">← 홈으로</a>
+    </div>
+  </div>
+</div>
+
+
 <!-- ═══════════ SIGNUP ═══════════ -->
 <div class="page" id="p-signup">
   <div class="nav">
@@ -887,7 +906,7 @@
 <!-- ═══════════ DASHBOARD ═══════════ -->
 <div class="page" id="p-dash">
   <div class="nav">
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('dash')">keywordlab<span class="dot">.ai</span></div>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('landing')">keywordlab<span class="dot">.ai</span></div>
     <div class="nav-right">
       <button class="theme-toggle lang-toggle" onclick="toggleLang()" title="언어">EN</button><button class="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드">🌓</button><div class="nav-credit">잔액 <b>0</b>건 <button class="ch-btn" onclick="go('charge')">충전</button></div>
       <button class="nav-logout" onclick="logout()" title="로그아웃">⏻</button>
@@ -1083,7 +1102,7 @@
 <!-- ═══════════ JOBS ═══════════ -->
 <div class="page" id="p-jobs">
   <div class="nav">
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('dash')">keywordlab<span class="dot">.ai</span></div>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('landing')">keywordlab<span class="dot">.ai</span></div>
     <div class="nav-right">
       <button class="theme-toggle lang-toggle" onclick="toggleLang()" title="언어">EN</button><button class="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드">🌓</button><div class="nav-credit">잔액 <b>0</b>건 <button class="ch-btn" onclick="go('charge')">충전</button></div>
       <button class="nav-logout" onclick="logout()" title="로그아웃">⏻</button>
@@ -1154,7 +1173,7 @@
 <!-- ═══════════ LIBRARY ═══════════ -->
 <div class="page" id="p-library">
   <div class="nav">
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('dash')">keywordlab<span class="dot">.ai</span></div>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('landing')">keywordlab<span class="dot">.ai</span></div>
     <div class="nav-right">
       <button class="theme-toggle lang-toggle" onclick="toggleLang()" title="언어">EN</button><button class="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드">🌓</button><div class="nav-credit">잔액 <b>0</b>건 <button class="ch-btn" onclick="go('charge')">충전</button></div>
       <button class="nav-logout" onclick="logout()" title="로그아웃">⏻</button>
@@ -1277,7 +1296,7 @@
 <!-- ═══════════ CHARGE ═══════════ -->
 <div class="page" id="p-charge">
   <div class="nav">
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('dash')">keywordlab<span class="dot">.ai</span></div>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('landing')">keywordlab<span class="dot">.ai</span></div>
     <div class="nav-right">
       <button class="theme-toggle lang-toggle" onclick="toggleLang()" title="언어">EN</button><button class="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드">🌓</button><div class="nav-credit">잔액 <b>0</b>건 <button class="ch-btn" onclick="go('charge')">충전</button></div>
       <button class="nav-logout" onclick="logout()" title="로그아웃">⏻</button>
@@ -1325,7 +1344,7 @@
 <!-- ═══════════ SETTINGS ═══════════ -->
 <div class="page" id="p-settings">
   <div class="nav">
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('dash')">keywordlab<span class="dot">.ai</span></div>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('landing')">keywordlab<span class="dot">.ai</span></div>
     <div class="nav-right">
       <button class="theme-toggle lang-toggle" onclick="toggleLang()" title="언어">EN</button><button class="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드">🌓</button><div class="nav-credit">잔액 <b>0</b>건 <button class="ch-btn" onclick="go('charge')">충전</button></div>
       <button class="nav-logout" onclick="logout()" title="로그아웃">⏻</button>
@@ -1429,7 +1448,7 @@
 <div class="page" id="p-admin">
   <div class="nav">
     <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
-    <div class="nav-brand" onclick="go('dash')">keywordlab<span class="dot">.ai</span> <span style="background:var(--red);color:#fff;font-size:10px;padding:2px 8px;border-radius:4px;margin-left:6px;font-weight:700">ADMIN</span></div>
+    <div class="nav-brand" onclick="go('landing')">keywordlab<span class="dot">.ai</span> <span style="background:var(--red);color:#fff;font-size:10px;padding:2px 8px;border-radius:4px;margin-left:6px;font-weight:700">ADMIN</span></div>
     <div class="nav-right">
       <button class="theme-toggle lang-toggle" onclick="toggleLang()" title="언어">EN</button><button class="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드">🌓</button><div class="nav-credit">잔액 <b>0</b>건 <button class="ch-btn" onclick="go('charge')">충전</button></div>
       <button class="nav-logout" onclick="logout()" title="로그아웃">⏻</button>
@@ -3079,6 +3098,52 @@ function renderSingleTable() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // ============= URL hash로 recovery 감지 (비번 재설정 이메일 링크) =============
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  if (hashParams.get('type') === 'recovery') {
+    // Supabase가 자동으로 hash의 access_token으로 임시 세션 만들어줌
+    // 그 다음 사용자가 새 비번 입력 → updateUser 호출
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('p-recovery').classList.add('active');
+    // hash 정리 (보안)
+    history.replaceState(null, '', window.location.pathname);
+  }
+
+  // 비번 재설정 제출
+  document.getElementById('btnRecoverySubmit')?.addEventListener('click', async () => {
+    const newPw = document.getElementById('recoveryNewPw').value;
+    const newPwConfirm = document.getElementById('recoveryNewPwConfirm').value;
+    const msgEl = document.getElementById('recoveryMsg');
+    msgEl.style.display = 'none';
+    if (newPw.length < 8) {
+      msgEl.textContent = '비밀번호는 8자 이상이어야 합니다';
+      msgEl.style.background = '#FEF2F2'; msgEl.style.borderColor = '#FECACA'; msgEl.style.color = '#991B1B';
+      msgEl.style.display = 'block'; return;
+    }
+    if (newPw !== newPwConfirm) {
+      msgEl.textContent = '비밀번호가 일치하지 않습니다';
+      msgEl.style.background = '#FEF2F2'; msgEl.style.borderColor = '#FECACA'; msgEl.style.color = '#991B1B';
+      msgEl.style.display = 'block'; return;
+    }
+    const btn = document.getElementById('btnRecoverySubmit');
+    btn.disabled = true; btn.textContent = '변경 중...';
+    const { error } = await sb.auth.updateUser({ password: newPw });
+    btn.disabled = false; btn.textContent = '비밀번호 변경 완료';
+    if (error) {
+      msgEl.textContent = '변경 실패: ' + error.message;
+      msgEl.style.background = '#FEF2F2'; msgEl.style.borderColor = '#FECACA'; msgEl.style.color = '#991B1B';
+      msgEl.style.display = 'block'; return;
+    }
+    msgEl.textContent = '✅ 비밀번호 변경 완료! 잠시 후 로그인 페이지로 이동합니다.';
+    msgEl.style.background = '#DBEAFE'; msgEl.style.borderColor = '#93C5FD'; msgEl.style.color = '#1E40AF';
+    msgEl.style.display = 'block';
+    setTimeout(async () => {
+      await sb.auth.signOut();
+      currentUser = null;
+      go('login');
+    }, 2000);
+  });
+
   // ============= i18n 초기 적용 =============
   applyI18n();
   document.querySelectorAll('.lang-toggle').forEach(b => b.textContent = _lang === 'ko' ? 'EN' : 'KO');

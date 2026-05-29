@@ -3,6 +3,13 @@
   "outputDirectory": "web",
   "framework": null,
   "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://keywordlab.ai/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

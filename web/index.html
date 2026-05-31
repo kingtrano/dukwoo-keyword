@@ -204,7 +204,7 @@
     cursor: pointer; transition: background .15s, color .15s;
     border-left: 3px solid transparent;
   }
-  .sidebar-item:hover { background: var(--primary-50); color: var(--primary); }
+  .sidebar-item:hover { background: var(--gray-100); color: var(--gray-900); }
   .sidebar-item.on {
     background: var(--primary-light);
     color: var(--primary-dark);
@@ -359,12 +359,14 @@
   .upload-zone:hover { border-color: var(--primary); background: #EFF6FF; }
 
   /* ── Pricing ── */
-  .pkg-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .pkg-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; align-items: stretch; }
   .pkg {
     background: #fff; border-radius: 14px; padding: 32px 24px;
     border: 1.5px solid var(--gray-200); text-align: center;
     position: relative; cursor: pointer; transition: all .2s;
+    display: flex; flex-direction: column;
   }
+  .pkg-btn { margin-top: auto; }
   .pkg:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow-lg); }
   .pkg.hot {
     border: 2px solid var(--primary);
@@ -386,7 +388,7 @@
     font-size: 12px; color: var(--gray-500); text-align: left; line-height: 2;
   }
   .pkg-btn {
-    margin-top: 18px; width: 100%; padding: 11px;
+    margin-top: auto; width: 100%; padding: 11px;
     border: none; border-radius: 8px; font-size: 13px;
     font-weight: 600; cursor: pointer; color: #fff;
     background: var(--navy); font-family: inherit; transition: all .15s;
@@ -485,9 +487,13 @@
   .sidebar-overlay.show { display: block; }
 
   @media (max-width: 768px) {
-    .nav { padding: 0 16px; height: 48px; }
-    .nav-brand { font-size: 16px; }
+    html, body { overflow-x: hidden; max-width: 100vw; }
+    .nav { padding: 0 12px; height: 48px; gap: 6px; }
+    .nav-brand { font-size: 15px; flex-shrink: 0; }
     .mobile-menu-btn { display: inline-block; }
+    .nav-right { gap: 4px; min-width: 0; flex-shrink: 1; flex-wrap: nowrap; overflow: hidden; }
+    .nav-right > * { flex-shrink: 0; }
+    .nav-right .btn-sm { font-size: 11px; padding: 5px 10px; white-space: nowrap; }
     .nav-credit { font-size: 11px; padding: 4px 6px 4px 8px; }
     .nav-credit b { font-size: 12px; }
     .nav-credit .ch-btn { padding: 2px 8px; font-size: 10px; }
@@ -505,17 +511,39 @@
     .page-title { font-size: 16px; }
     .page-desc { font-size: 12px; }
 
-    /* 그리드 → 단일 칸 (모바일) */
-    .stat-grid, [style*="grid-template-columns:repeat(3,1fr)"], [style*="grid-template-columns:repeat(4,1fr)"] {
+    /* 그리드 → 단일 칸 (모바일) — 모든 inline grid + class grid 포함 */
+    .stat-grid,
+    .pkg-grid,
+    [style*="grid-template-columns:repeat"],
+    [style*="grid-template-columns: repeat"],
+    [style*="grid-template-columns:1fr 1fr"],
+    [style*="grid-template-columns: 1fr 1fr"],
+    [style*="grid-template-columns:1fr 60px 1fr"],
+    [style*="grid-template-columns: 1fr 60px 1fr"],
+    [style*="grid-template-columns:1fr 40px 1fr 40px 1fr"],
+    [style*="grid-template-columns: 1fr 40px 1fr 40px 1fr"] {
       grid-template-columns: 1fr !important;
+      gap: 16px !important;
     }
-    .pkg-grid { grid-template-columns: 1fr; }
+    /* 모바일에선 비교 / HOW IT WORKS 사이 화살표 숨김 (세로 배치라 불필요) */
+    .arrow-hide-mobile { display: none !important; }
+
     .container { padding: 16px; }
     .auth-card { padding: 24px; }
     .tbl thead { display: none; }
     .tbl tbody tr { display: block; padding: 12px; border-top: 1px solid var(--gray-100); }
     .tbl tbody td { display: flex; justify-content: space-between; padding: 4px 0; border: none; text-align: right !important; }
     .tbl tbody td::before { content: attr(data-label); font-weight: 600; color: var(--gray-500); text-align: left; }
+
+    /* 표 td에 data-label 없어도 카드 형태 가운데 정렬 (잡 페이지 등) */
+    .tbl tbody tr > td:only-child,
+    .tbl tbody td:not([data-label])::before { content: ''; }
+
+    /* 카드 형식 결과 (단어검색 등) 모바일에서 가운데 정렬 */
+    .result-card { text-align: center !important; }
+
+    /* 패키지 카드 모바일 — 시작하기 버튼 padding 줄임 */
+    .pkg { padding: 28px 20px; }
 
     .toast-stack { top: 60px; right: 10px; left: 10px; }
     .toast { min-width: 0; max-width: 100%; }
@@ -572,6 +600,7 @@
     <div class="nav-center">
       <a class="nav-link on" onclick="go('landing')">제품소개</a>
       <a class="nav-link" onclick="go('plans')">요금제</a>
+      <a class="nav-link" onclick="go('tutorial')">사용 가이드</a>
     </div>
     <div class="nav-right">
       <a class="nav-link" onclick="go('login')">로그인</a>
@@ -747,9 +776,9 @@
     </div>
   </div>
   <div class="foot">
-    © 2026 keywordlab.ai · 덕우무역(주)<br>
+    © 2026 keywordlab.ai · 주식회사 덕우무역<br>
     <a>이용약관</a><a>개인정보처리방침</a><a>고객센터</a><br>
-    서울특별시 강남구 테헤란로 123 · 사업자등록번호 123-45-67890 · 대표 이한상
+    서울특별시 구로구 경인로53길 15, 중앙유통단지 업무에이동 053호 · 사업자등록번호 145-81-03589 · 대표 김자헌
   </div>
 </div>
 
@@ -761,6 +790,7 @@
     <div class="nav-center">
       <a class="nav-link" onclick="go('landing')">제품소개</a>
       <a class="nav-link on">요금제</a>
+      <a class="nav-link" onclick="go('tutorial')">사용 가이드</a>
     </div>
     <div class="nav-right">
       <a class="nav-link" onclick="go('login')">로그인</a>
@@ -830,7 +860,7 @@
     </div>
   </div>
   <div class="foot">
-    © 2026 keywordlab.ai · 덕우무역(주)<br>
+    © 2026 keywordlab.ai · 주식회사 덕우무역<br>
     <a>이용약관</a><a>개인정보처리방침</a><a>고객센터</a>
   </div>
 </div>
@@ -851,8 +881,9 @@
       <div id="loginError" style="display:none;background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:14px"></div>
       <div class="field"><label>이메일</label><input type="email" id="loginEmail" placeholder="you@example.com"></div>
       <div class="field"><label>비밀번호</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
-      <div style="text-align:right;margin-bottom:10px"><a id="linkForgotPw" style="font-size:12px;color:var(--primary);cursor:pointer">비밀번호를 잊으셨나요?</a></div>
+      <div style="text-align:right;margin-bottom:10px"><a id="linkForgotPw" style="font-size:13px;color:var(--primary);cursor:pointer;font-weight:600;padding:6px 10px;border-radius:6px;display:inline-block;text-decoration:underline;text-underline-offset:3px;transition:background .15s,color .15s" onmouseover="this.style.background='var(--primary-50)';this.style.color='var(--primary-dark)'" onmouseout="this.style.background='transparent';this.style.color='var(--primary)'">🔑 비밀번호를 잊으셨나요?</a></div>
       <button class="btn btn-primary btn-full" id="btnLogin">로그인</button>
+      <button class="btn btn-full" style="background:var(--gray-100);color:var(--gray-700);margin-top:8px" onclick="go('landing')">취소</button>
       <a class="auth-switch" onclick="go('signup')">계정이 없으세요? 회원가입 →</a>
       <div class="promo">가입 즉시 <b>10 상품 무료 체험</b> 제공</div>
     </div>
@@ -897,6 +928,7 @@
       <div class="field"><label>비밀번호</label><input type="password" id="signupPassword" placeholder="8자 이상"></div>
       <div class="field"><label>사업자번호 (선택)</label><input type="text" id="signupBizNum" placeholder="123-45-67890"></div>
       <button class="btn btn-primary btn-full" id="btnSignup">가입하기 → 10 상품 무료</button>
+      <button class="btn btn-full" style="background:var(--gray-100);color:var(--gray-700);margin-top:8px" onclick="go('landing')">취소</button>
       <a class="auth-switch" onclick="go('login')">이미 가입했어요. 로그인 →</a>
     </div>
   </div>
@@ -906,7 +938,7 @@
 <!-- ═══════════ DASHBOARD ═══════════ -->
 <div class="page" id="p-dash">
   <div class="nav">
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('landing')">keywordlab<span class="dot">.ai</span></div>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="goMain()">keywordlab<span class="dot">.ai</span></div>
     <div class="nav-right">
       <button class="theme-toggle lang-toggle" onclick="toggleLang()" title="언어">EN</button><button class="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드">🌓</button><div class="nav-credit">잔액 <b>0</b>건 <button class="ch-btn" onclick="go('charge')">충전</button></div>
       <button class="nav-logout" onclick="logout()" title="로그아웃">⏻</button>
@@ -925,6 +957,7 @@
         <div class="sidebar-item" onclick="go('library')"><span class="icon">📜</span><span data-i18n="side.word_log">단어 기록</span></div>
         <div class="sidebar-item" onclick="go('jobs')"><span class="icon">📁</span><span data-i18n="side.excel_log">엑셀 기록</span></div>
         <div class="sidebar-item" onclick="go('charge')"><span class="icon">💳</span><span data-i18n="side.charge">충전</span></div>
+        <div class="sidebar-item" onclick="go('tutorial')"><span class="icon">📚</span><span data-i18n="side.tutorial">사용 가이드</span></div>
       </div>
       <div class="sidebar-group">
         <div class="sidebar-title" data-i18n="side.account">계정</div>
@@ -1095,14 +1128,14 @@
       </div>
     </main>
   </div>
-  <div class="foot">덕우무역(주) · 대표 이한상 · 사업자등록번호 123-45-67890 · 통신판매업 2026-서울강남-XXXXX<br>서울특별시 강남구 테헤란로 123 · 고객문의 lhs@brightenllc.com<br><a onclick="go(\terms)">이용약관</a> · <a onclick="go(\privacy)">개인정보처리방침</a> · <a onclick="go(\landing)">홈</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
+  <div class="foot">주식회사 덕우무역 · 대표 김자헌 · 사업자등록번호 145-81-03589 · 통신판매업 2025-서울구로-1723호<br>서울특별시 구로구 경인로53길 15, 중앙유통단지 업무에이동 053호 · 고객문의 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8de1e5fecdefffe4eae5f9e8e3e1e1eea3eee2e0">[email&#160;protected]</a><br><a onclick="go(\terms)">이용약관</a> · <a onclick="go(\privacy)">개인정보처리방침</a> · <a onclick="go(\landing)">홈</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
 </div>
 
 
 <!-- ═══════════ JOBS ═══════════ -->
 <div class="page" id="p-jobs">
   <div class="nav">
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('landing')">keywordlab<span class="dot">.ai</span></div>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="goMain()">keywordlab<span class="dot">.ai</span></div>
     <div class="nav-right">
       <button class="theme-toggle lang-toggle" onclick="toggleLang()" title="언어">EN</button><button class="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드">🌓</button><div class="nav-credit">잔액 <b>0</b>건 <button class="ch-btn" onclick="go('charge')">충전</button></div>
       <button class="nav-logout" onclick="logout()" title="로그아웃">⏻</button>
@@ -1120,6 +1153,7 @@
         <div class="sidebar-item" onclick="go('library')"><span class="icon">📜</span><span data-i18n="side.word_log">단어 기록</span></div>
         <div class="sidebar-item on"><span class="icon">📁</span><span data-i18n="side.excel_log">엑셀 기록</span></div>
         <div class="sidebar-item" onclick="go('charge')"><span class="icon">💳</span><span data-i18n="side.charge">충전</span></div>
+        <div class="sidebar-item" onclick="go('tutorial')"><span class="icon">📚</span><span data-i18n="side.tutorial">사용 가이드</span></div>
       </div>
       <div class="sidebar-group">
         <div class="sidebar-title" data-i18n="side.account">계정</div>
@@ -1166,14 +1200,14 @@
     </div>
     </main>
   </div>
-  <div class="foot">덕우무역(주) · 대표 이한상 · 사업자등록번호 123-45-67890 · 통신판매업 2026-서울강남-XXXXX<br>서울특별시 강남구 테헤란로 123 · 고객문의 lhs@brightenllc.com<br><a onclick="go(\terms)">이용약관</a> · <a onclick="go(\privacy)">개인정보처리방침</a> · <a onclick="go(\landing)">홈</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
+  <div class="foot">주식회사 덕우무역 · 대표 김자헌 · 사업자등록번호 145-81-03589 · 통신판매업 2025-서울구로-1723호<br>서울특별시 구로구 경인로53길 15, 중앙유통단지 업무에이동 053호 · 고객문의 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8fe3e7fccfedfde6e8e7fbeae1e3e3eca1ece0e2">[email&#160;protected]</a><br><a onclick="go(\terms)">이용약관</a> · <a onclick="go(\privacy)">개인정보처리방침</a> · <a onclick="go(\landing)">홈</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
 </div>
 
 
 <!-- ═══════════ LIBRARY ═══════════ -->
 <div class="page" id="p-library">
   <div class="nav">
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('landing')">keywordlab<span class="dot">.ai</span></div>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="goMain()">keywordlab<span class="dot">.ai</span></div>
     <div class="nav-right">
       <button class="theme-toggle lang-toggle" onclick="toggleLang()" title="언어">EN</button><button class="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드">🌓</button><div class="nav-credit">잔액 <b>0</b>건 <button class="ch-btn" onclick="go('charge')">충전</button></div>
       <button class="nav-logout" onclick="logout()" title="로그아웃">⏻</button>
@@ -1191,6 +1225,7 @@
         <div class="sidebar-item on"><span class="icon">📜</span><span data-i18n="side.word_log">단어 기록</span></div>
         <div class="sidebar-item" onclick="go('jobs')"><span class="icon">📁</span><span data-i18n="side.excel_log">엑셀 기록</span></div>
         <div class="sidebar-item" onclick="go('charge')"><span class="icon">💳</span><span data-i18n="side.charge">충전</span></div>
+        <div class="sidebar-item" onclick="go('tutorial')"><span class="icon">📚</span><span data-i18n="side.tutorial">사용 가이드</span></div>
       </div>
       <div class="sidebar-group">
         <div class="sidebar-title" data-i18n="side.account">계정</div>
@@ -1289,14 +1324,14 @@
     <p id="libSummary" style="margin-top:12px;font-size:12px;color:var(--gray-400);text-align:center"></p>
     </main>
   </div>
-  <div class="foot">덕우무역(주) · 대표 이한상 · 사업자등록번호 123-45-67890 · 통신판매업 2026-서울강남-XXXXX<br>서울특별시 강남구 테헤란로 123 · 고객문의 lhs@brightenllc.com<br><a onclick="go(\terms)">이용약관</a> · <a onclick="go(\privacy)">개인정보처리방침</a> · <a onclick="go(\landing)">홈</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
+  <div class="foot">주식회사 덕우무역 · 대표 김자헌 · 사업자등록번호 145-81-03589 · 통신판매업 2025-서울구로-1723호<br>서울특별시 구로구 경인로53길 15, 중앙유통단지 업무에이동 053호 · 고객문의 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="eb878398ab8999828c839f8e85878788c5888486">[email&#160;protected]</a><br><a onclick="go(\terms)">이용약관</a> · <a onclick="go(\privacy)">개인정보처리방침</a> · <a onclick="go(\landing)">홈</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
 </div>
 
 
 <!-- ═══════════ CHARGE ═══════════ -->
 <div class="page" id="p-charge">
   <div class="nav">
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('landing')">keywordlab<span class="dot">.ai</span></div>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="goMain()">keywordlab<span class="dot">.ai</span></div>
     <div class="nav-right">
       <button class="theme-toggle lang-toggle" onclick="toggleLang()" title="언어">EN</button><button class="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드">🌓</button><div class="nav-credit">잔액 <b>0</b>건 <button class="ch-btn" onclick="go('charge')">충전</button></div>
       <button class="nav-logout" onclick="logout()" title="로그아웃">⏻</button>
@@ -1314,6 +1349,7 @@
         <div class="sidebar-item" onclick="go('library')"><span class="icon">📜</span><span data-i18n="side.word_log">단어 기록</span></div>
         <div class="sidebar-item" onclick="go('jobs')"><span class="icon">📁</span><span data-i18n="side.excel_log">엑셀 기록</span></div>
         <div class="sidebar-item on"><span class="icon">💳</span><span data-i18n="side.charge">충전</span></div>
+        <div class="sidebar-item" onclick="go('tutorial')"><span class="icon">📚</span><span data-i18n="side.tutorial">사용 가이드</span></div>
       </div>
       <div class="sidebar-group">
         <div class="sidebar-title" data-i18n="side.account">계정</div>
@@ -1337,14 +1373,14 @@
     </div>
     </main>
   </div>
-  <div class="foot">덕우무역(주) · 대표 이한상 · 사업자등록번호 123-45-67890 · 통신판매업 2026-서울강남-XXXXX<br>서울특별시 강남구 테헤란로 123 · 고객문의 lhs@brightenllc.com<br><a onclick="go(\terms)">이용약관</a> · <a onclick="go(\privacy)">개인정보처리방침</a> · <a onclick="go(\landing)">홈</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
+  <div class="foot">주식회사 덕우무역 · 대표 김자헌 · 사업자등록번호 145-81-03589 · 통신판매업 2025-서울구로-1723호<br>서울특별시 구로구 경인로53길 15, 중앙유통단지 업무에이동 053호 · 고객문의 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b7dbdfc4f7d5c5ded0dfc3d2d9dbdbd499d4d8da">[email&#160;protected]</a><br><a onclick="go(\terms)">이용약관</a> · <a onclick="go(\privacy)">개인정보처리방침</a> · <a onclick="go(\landing)">홈</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
 </div>
 
 
 <!-- ═══════════ SETTINGS ═══════════ -->
 <div class="page" id="p-settings">
   <div class="nav">
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="go('landing')">keywordlab<span class="dot">.ai</span></div>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="nav-brand" onclick="goMain()">keywordlab<span class="dot">.ai</span></div>
     <div class="nav-right">
       <button class="theme-toggle lang-toggle" onclick="toggleLang()" title="언어">EN</button><button class="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드">🌓</button><div class="nav-credit">잔액 <b>0</b>건 <button class="ch-btn" onclick="go('charge')">충전</button></div>
       <button class="nav-logout" onclick="logout()" title="로그아웃">⏻</button>
@@ -1362,6 +1398,7 @@
         <div class="sidebar-item" onclick="go('library')"><span class="icon">📜</span><span data-i18n="side.word_log">단어 기록</span></div>
         <div class="sidebar-item" onclick="go('jobs')"><span class="icon">📁</span><span data-i18n="side.excel_log">엑셀 기록</span></div>
         <div class="sidebar-item" onclick="go('charge')"><span class="icon">💳</span><span data-i18n="side.charge">충전</span></div>
+        <div class="sidebar-item" onclick="go('tutorial')"><span class="icon">📚</span><span data-i18n="side.tutorial">사용 가이드</span></div>
       </div>
       <div class="sidebar-group">
         <div class="sidebar-title" data-i18n="side.account">계정</div>
@@ -1440,7 +1477,7 @@
       </div>
     </main>
   </div>
-  <div class="foot">덕우무역(주) · 대표 이한상 · 사업자등록번호 123-45-67890 · 통신판매업 2026-서울강남-XXXXX<br>서울특별시 강남구 테헤란로 123 · 고객문의 lhs@brightenllc.com<br><a onclick="go(\terms)">이용약관</a> · <a onclick="go(\privacy)">개인정보처리방침</a> · <a onclick="go(\landing)">홈</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
+  <div class="foot">주식회사 덕우무역 · 대표 김자헌 · 사업자등록번호 145-81-03589 · 통신판매업 2025-서울구로-1723호<br>서울특별시 구로구 경인로53길 15, 중앙유통단지 업무에이동 053호 · 고객문의 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b8d4d0cbf8dacad1dfd0ccddd6d4d4db96dbd7d5">[email&#160;protected]</a><br><a onclick="go(\terms)">이용약관</a> · <a onclick="go(\privacy)">개인정보처리방침</a> · <a onclick="go(\landing)">홈</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
 </div>
 
 
@@ -1448,7 +1485,7 @@
 <div class="page" id="p-admin">
   <div class="nav">
     <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
-    <div class="nav-brand" onclick="go('landing')">keywordlab<span class="dot">.ai</span> <span style="background:var(--red);color:#fff;font-size:10px;padding:2px 8px;border-radius:4px;margin-left:6px;font-weight:700">ADMIN</span></div>
+    <div class="nav-brand" onclick="go('jobs')">keywordlab<span class="dot">.ai</span> <span style="background:var(--red);color:#fff;font-size:10px;padding:2px 8px;border-radius:4px;margin-left:6px;font-weight:700">ADMIN</span></div>
     <div class="nav-right">
       <button class="theme-toggle lang-toggle" onclick="toggleLang()" title="언어">EN</button><button class="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드">🌓</button><div class="nav-credit">잔액 <b>0</b>건 <button class="ch-btn" onclick="go('charge')">충전</button></div>
       <button class="nav-logout" onclick="logout()" title="로그아웃">⏻</button>
@@ -1466,6 +1503,7 @@
         <div class="sidebar-item" onclick="go('library')"><span class="icon">📜</span><span data-i18n="side.word_log">단어 기록</span></div>
         <div class="sidebar-item" onclick="go('jobs')"><span class="icon">📁</span><span data-i18n="side.excel_log">엑셀 기록</span></div>
         <div class="sidebar-item" onclick="go('charge')"><span class="icon">💳</span><span data-i18n="side.charge">충전</span></div>
+        <div class="sidebar-item" onclick="go('tutorial')"><span class="icon">📚</span><span data-i18n="side.tutorial">사용 가이드</span></div>
       </div>
       <div class="sidebar-group">
         <div class="sidebar-title" data-i18n="side.account">계정</div>
@@ -1494,7 +1532,7 @@
         <div style="padding:16px 20px;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
           <h3 style="font-size:14px;font-weight:700;color:var(--navy)">사용자 목록</h3>
           <div style="display:flex;gap:6px">
-            <input type="text" id="admUserSearch" placeholder="이메일/이름 검색" style="padding:6px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px">
+            <input type="text" id="admUserSearch" placeholder="이메일/이름 검색" autocomplete="off" name="admin-user-search-no-fill" style="padding:6px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px">
             <button class="btn btn-dark btn-sm" id="btnAdmExport" style="font-size:11px;padding:6px 12px">📊 xlsx</button>
             <button class="btn btn-ghost btn-sm" id="btnAdmExportCsv" style="font-size:11px;padding:6px 12px;background:#fff;border:1px solid var(--gray-200);color:var(--gray-700)">📄 csv</button>
           </div>
@@ -1523,7 +1561,265 @@
       </div>
     </main>
   </div>
-  <div class="foot">덕우무역(주) · 대표 이한상 · 사업자등록번호 123-45-67890 · 통신판매업 2026-서울강남-XXXXX<br>서울특별시 강남구 테헤란로 123 · 고객문의 lhs@brightenllc.com<br><a onclick="go(\terms)">이용약관</a> · <a onclick="go(\privacy)">개인정보처리방침</a> · <a onclick="go(\landing)">홈</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
+  <div class="foot">주식회사 덕우무역 · 대표 김자헌 · 사업자등록번호 145-81-03589 · 통신판매업 2025-서울구로-1723호<br>서울특별시 구로구 경인로53길 15, 중앙유통단지 업무에이동 053호 · 고객문의 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="93fffbe0d3f1e1faf4fbe7f6fdfffff0bdf0fcfe">[email&#160;protected]</a><br><a onclick="go(\terms)">이용약관</a> · <a onclick="go(\privacy)">개인정보처리방침</a> · <a onclick="go(\landing)">홈</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
+</div>
+
+
+<!-- ═══════════ TUTORIAL (사용 가이드) ═══════════ -->
+<div class="page" id="p-tutorial">
+  <style>
+    /* 사용 가이드 페이지 — 다크 모드에서도 라이트 색 강제 (가독성) */
+    [data-theme="dark"] #p-tutorial { color-scheme: light; }
+    [data-theme="dark"] #p-tutorial h1,
+    [data-theme="dark"] #p-tutorial h2 { color: #0F172A !important; }
+    [data-theme="dark"] #p-tutorial p,
+    [data-theme="dark"] #p-tutorial li,
+    [data-theme="dark"] #p-tutorial td,
+    [data-theme="dark"] #p-tutorial th,
+    [data-theme="dark"] #p-tutorial summary { color: #334155 !important; }
+    [data-theme="dark"] #p-tutorial summary { color: #0F172A !important; font-weight: 600; }
+    [data-theme="dark"] #p-tutorial b { color: #0F172A !important; }
+    [data-theme="dark"] #p-tutorial code { background: #F8FAFC !important; color: #475569 !important; border-color: #E2E8F0 !important; }
+    [data-theme="dark"] #p-tutorial .faq-item { background: #fff !important; border-color: #E2E8F0 !important; }
+    /* hero/CTA 영역 — 다크 배경에서 흰색 텍스트 강제 */
+    [data-theme="dark"] #p-tutorial .tutorial-hero h1,
+    [data-theme="dark"] #p-tutorial .tutorial-hero p,
+    [data-theme="dark"] #p-tutorial .tutorial-hero a,
+    [data-theme="dark"] #p-tutorial .tutorial-hero button,
+    [data-theme="dark"] #p-tutorial .tutorial-cta h2,
+    [data-theme="dark"] #p-tutorial .tutorial-cta p { color: #fff !important; }
+    [data-theme="dark"] #p-tutorial .tutorial-hero .step-badge { color: #BFDBFE !important; }
+    [data-theme="dark"] #p-tutorial .tutorial-cta p { color: #BFDBFE !important; }
+    /* 흰 배경 버튼은 navy 글자 강제 (무료로 시작 등) */
+    [data-theme="dark"] #p-tutorial .tutorial-hero .btn-primary,
+    [data-theme="dark"] #p-tutorial .tutorial-cta .btn-primary { color: #1E3A8A !important; background: #fff !important; }
+  </style>
+  <div class="nav">
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="nav-brand" onclick="goMain()">keywordlab<span class="dot">.ai</span></div>
+    <div class="nav-right">
+      <button class="theme-toggle lang-toggle" onclick="toggleLang()" title="언어">EN</button>
+      <button class="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드">🌓</button>
+      <div class="nav-credit">잔액 <b>0</b>건 <button class="ch-btn" onclick="go('charge')">충전</button></div>
+      <button class="nav-logout" onclick="logout()" title="로그아웃">⏻</button>
+    </div>
+  </div>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-group">
+        <div class="sidebar-title" data-i18n="side.tools">키워드 도구</div>
+        <div class="sidebar-item" onclick="go('dash')"><span class="icon">🔍</span><span data-i18n="side.word_search">단어 검색</span></div>
+        <div class="sidebar-item" onclick="go('dash')"><span class="icon">📊</span><span data-i18n="side.excel_search">엑셀 검색</span></div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-title" data-i18n="side.shortcuts">바로가기</div>
+        <div class="sidebar-item" onclick="go('library')"><span class="icon">📜</span><span data-i18n="side.word_log">단어 기록</span></div>
+        <div class="sidebar-item" onclick="go('jobs')"><span class="icon">📁</span><span data-i18n="side.excel_log">엑셀 기록</span></div>
+        <div class="sidebar-item" onclick="go('charge')"><span class="icon">💳</span><span data-i18n="side.charge">충전</span></div>
+        <div class="sidebar-item on"><span class="icon">📚</span><span data-i18n="side.tutorial">사용 가이드</span></div>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-title" data-i18n="side.account">계정</div>
+        <div class="sidebar-item" onclick="go('settings')"><span class="icon">⚙️</span><span data-i18n="side.settings">설정</span></div>
+        <div class="sidebar-item" onclick="logout()"><span class="icon">⏻</span><span data-i18n="side.logout">로그아웃</span></div>
+      </div>
+    </aside>
+    <main class="main-content" style="padding:0">
+
+  <!-- Hero -->
+  <div class="tutorial-hero" style="background:linear-gradient(135deg,#0F1B3D 0%,#1E3A8A 100%);padding:56px 32px 44px;text-align:center;color:#fff;border-radius:14px;margin-bottom:0">
+    <div style="max-width:760px;margin:0 auto">
+      <div class="step-badge" style="display:inline-block;background:rgba(147,197,253,0.15);color:#BFDBFE;font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px">📚 사용 가이드</div>
+      <h1 style="font-size:40px;font-weight:800;line-height:1.25;letter-spacing:-1px;margin:0 0 14px">5분이면 마스터합니다</h1>
+      <p style="font-size:16px;color:#BFDBFE;line-height:1.7;margin:0 0 28px">엑셀 올리면 키워드가 나옵니다.<br>1만 상품 5분, 인건비 1/30.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary btn-lg" onclick="go('signup')" style="background:#fff;color:#1E3A8A">무료로 시작 →</button>
+        <a href="#step1" class="btn btn-ghost btn-lg" style="border-color:rgba(255,255,255,0.3);color:#fff">아래로 스크롤 ↓</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <div style="background:#fff;padding:40px 32px;margin-top:16px;border-radius:14px;border:1px solid var(--gray-100)">
+    <div style="max-width:880px;margin:0 auto">
+
+      <!-- Step 1 -->
+      <div id="step1" style="display:grid;grid-template-columns:80px 1fr;gap:24px;margin-bottom:48px;padding-bottom:48px;border-bottom:1px solid var(--gray-100)">
+        <div style="text-align:center">
+          <div style="width:64px;height:64px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 6px">📝</div>
+          <div style="font-size:11px;font-weight:700;color:var(--primary);letter-spacing:1px">STEP 1</div>
+        </div>
+        <div>
+          <h2 style="font-size:22px;font-weight:800;color:var(--navy);margin:0 0 10px;letter-spacing:-0.5px">회원가입 — 1분이면 끝</h2>
+          <p style="font-size:14px;color:var(--gray-600);line-height:1.7;margin:0 0 14px">홈 화면에서 <b style="color:var(--primary)">"무료로 시작하기"</b> → 이메일·비밀번호·이름 입력 → 가입 완료. 가입 즉시 <b style="color:var(--green)">10 상품 무료 크레딧</b>이 들어옵니다.</p>
+          <div style="background:#F0FDF4;border-left:3px solid var(--green);padding:12px 16px;border-radius:6px;font-size:13px;color:#166534;line-height:1.7">
+            💡 <b>인증 메일이 안 오면</b> 정크함/스팸함을 확인하세요. <code style="background:#fff;padding:1px 6px;border-radius:4px;font-size:11px"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="91fffee3f4e1fde8d1faf4e8e6fee3f5fdf0f3bff0f8">[email&#160;protected]</a></code>에서 옵니다.
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="display:grid;grid-template-columns:80px 1fr;gap:24px;margin-bottom:48px;padding-bottom:48px;border-bottom:1px solid var(--gray-100)">
+        <div style="text-align:center">
+          <div style="width:64px;height:64px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 6px">🔍</div>
+          <div style="font-size:11px;font-weight:700;color:var(--primary);letter-spacing:1px">STEP 2</div>
+        </div>
+        <div>
+          <h2 style="font-size:22px;font-weight:800;color:var(--navy);margin:0 0 10px;letter-spacing:-0.5px">단어 검색 — 키워드 하나로 확장</h2>
+          <p style="font-size:14px;color:var(--gray-600);line-height:1.7;margin:0 0 14px">대시보드 좌측 <b style="color:var(--primary)">🔍 단어 검색</b> 클릭. 상품 키워드 하나 입력하면 → AI가 30~50개 관련 키워드 추출 → 네이버 검색량/경쟁도/KQS 등급 자동 계산.</p>
+          <div style="background:#F8FAFC;border:1px solid var(--gray-100);border-radius:8px;padding:14px 18px;font-size:13px;color:var(--gray-700);line-height:1.8">
+            <b>예시:</b> "라면" 입력 → <code style="background:#fff;border:1px solid #E2E8F0;padding:1px 6px;border-radius:4px;font-size:11px">컵라면 28,160</code> <code style="background:#fff;border:1px solid #E2E8F0;padding:1px 6px;border-radius:4px;font-size:11px">매운컵라면 700</code> <code style="background:#fff;border:1px solid #E2E8F0;padding:1px 6px;border-radius:4px;font-size:11px">맛있는라면 6,250</code> ...
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 (핵심) -->
+      <div style="display:grid;grid-template-columns:80px 1fr;gap:24px;margin-bottom:48px;padding-bottom:48px;border-bottom:1px solid var(--gray-100)">
+        <div style="text-align:center">
+          <div style="width:64px;height:64px;background:linear-gradient(135deg,#2563EB,#1E3A8A);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 6px;color:#fff">📊</div>
+          <div style="font-size:11px;font-weight:700;color:var(--primary);letter-spacing:1px">STEP 3</div>
+          <div style="font-size:10px;color:var(--red);font-weight:700;margin-top:2px">★ 핵심</div>
+        </div>
+        <div>
+          <h2 style="font-size:22px;font-weight:800;color:var(--navy);margin:0 0 10px;letter-spacing:-0.5px">엑셀 검색 — 1만 상품 5분</h2>
+          <p style="font-size:14px;color:var(--gray-600);line-height:1.7;margin:0 0 14px">사이드바 <b style="color:var(--primary)">📊 엑셀 검색</b> 클릭. UPlat/사방넷/샵링커 양식 그대로 업로드 → 자동 감지 → 키워드 추출 → 결과 엑셀 다운로드. <b>양식 변환 불필요.</b></p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:12px 14px;font-size:13px;color:#78350F;line-height:1.7">
+              <div style="font-weight:700;margin-bottom:4px">⚡ 빠른 모드</div>
+              1만 상품 = 약 5분<br>표준 AI 분석
+            </div>
+            <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:12px 14px;font-size:13px;color:#1E40AF;line-height:1.7">
+              <div style="font-weight:700;margin-bottom:4px">🎯 정밀 모드</div>
+              1만 상품 = 약 15분<br>30~80개 키워드/상품
+            </div>
+          </div>
+          <div style="background:#F0FDF4;border-left:3px solid var(--green);padding:12px 16px;border-radius:6px;font-size:13px;color:#166534;line-height:1.7;margin-top:14px">
+            💡 결과는 원본 엑셀의 <b>D열 상품명</b> + <b>L열 키워드 분배</b>로 자동 작성됩니다. 그대로 네이버 스마트스토어 일괄 등록 가능.
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div style="display:grid;grid-template-columns:80px 1fr;gap:24px;margin-bottom:48px;padding-bottom:48px;border-bottom:1px solid var(--gray-100)">
+        <div style="text-align:center">
+          <div style="width:64px;height:64px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 6px">🏆</div>
+          <div style="font-size:11px;font-weight:700;color:var(--primary);letter-spacing:1px">STEP 4</div>
+        </div>
+        <div>
+          <h2 style="font-size:22px;font-weight:800;color:var(--navy);margin:0 0 10px;letter-spacing:-0.5px">KQS 등급 읽는 법</h2>
+          <p style="font-size:14px;color:var(--gray-600);line-height:1.7;margin:0 0 14px">KQS = <b>(검색량 × CTR × 2) ÷ (경쟁도 × 광고깊이)</b>. 등급이 높을수록 노출 가능성 ↑</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;background:#fff;border:1px solid var(--gray-100);border-radius:8px;overflow:hidden">
+            <thead>
+              <tr style="background:#F8FAFC">
+                <th style="padding:10px 14px;text-align:left;font-weight:700;color:var(--navy);border-bottom:1px solid var(--gray-100)">등급</th>
+                <th style="padding:10px 14px;text-align:left;font-weight:700;color:var(--navy);border-bottom:1px solid var(--gray-100)">의미</th>
+                <th style="padding:10px 14px;text-align:left;font-weight:700;color:var(--navy);border-bottom:1px solid var(--gray-100)">전략</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid var(--gray-100)"><span style="background:#10B981;color:#fff;font-weight:700;padding:2px 10px;border-radius:6px;font-size:11px">S</span></td><td style="padding:10px 14px;border-bottom:1px solid var(--gray-100);color:var(--gray-700)">검색량 높음 + 경쟁 적음</td><td style="padding:10px 14px;border-bottom:1px solid var(--gray-100);color:var(--gray-700)"><b>메인 키워드</b>로 즉시 사용</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid var(--gray-100)"><span style="background:#3B82F6;color:#fff;font-weight:700;padding:2px 10px;border-radius:6px;font-size:11px">A</span></td><td style="padding:10px 14px;border-bottom:1px solid var(--gray-100);color:var(--gray-700)">검색량 중간 + 경쟁 보통</td><td style="padding:10px 14px;border-bottom:1px solid var(--gray-100);color:var(--gray-700)"><b>서브 키워드</b>로 조합</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid var(--gray-100)"><span style="background:#F59E0B;color:#fff;font-weight:700;padding:2px 10px;border-radius:6px;font-size:11px">B</span></td><td style="padding:10px 14px;border-bottom:1px solid var(--gray-100);color:var(--gray-700)">검색량 있음 + 경쟁 있음</td><td style="padding:10px 14px;border-bottom:1px solid var(--gray-100);color:var(--gray-700)"><b>카테고리 확장</b>에 활용</td></tr>
+              <tr><td style="padding:10px 14px;border-bottom:1px solid var(--gray-100)"><span style="background:#F97316;color:#fff;font-weight:700;padding:2px 10px;border-radius:6px;font-size:11px">C</span></td><td style="padding:10px 14px;border-bottom:1px solid var(--gray-100);color:var(--gray-700)">검색량 낮음</td><td style="padding:10px 14px;border-bottom:1px solid var(--gray-100);color:var(--gray-700)"><b>롱테일</b> 키워드</td></tr>
+              <tr><td style="padding:10px 14px"><span style="background:#EF4444;color:#fff;font-weight:700;padding:2px 10px;border-radius:6px;font-size:11px">D</span></td><td style="padding:10px 14px;color:var(--gray-700)">경쟁 매우 높음</td><td style="padding:10px 14px;color:var(--gray-700)">사용 주의 (브랜드 키워드)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div style="display:grid;grid-template-columns:80px 1fr;gap:24px;margin-bottom:24px">
+        <div style="text-align:center">
+          <div style="width:64px;height:64px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 6px">🚀</div>
+          <div style="font-size:11px;font-weight:700;color:var(--primary);letter-spacing:1px">STEP 5</div>
+        </div>
+        <div>
+          <h2 style="font-size:22px;font-weight:800;color:var(--navy);margin:0 0 10px;letter-spacing:-0.5px">결과 활용 — 스마트스토어 적용</h2>
+          <p style="font-size:14px;color:var(--gray-600);line-height:1.7;margin:0 0 14px">결과 엑셀의 <b>D열 새 상품명</b>을 스마트스토어/UPlat에 일괄 등록. S/A 등급 키워드를 상품명 앞쪽에, B/C는 태그 영역에 배치하면 효과적입니다.</p>
+          <ul style="margin:0;padding-left:20px;color:var(--gray-700);font-size:13px;line-height:2">
+            <li><b>상품명 (40자):</b> S등급 1~2개 + 핵심 속성 (소재/색상/사이즈)</li>
+            <li><b>태그/검색어:</b> A·B등급 5~10개</li>
+            <li><b>1주 후 재분석:</b> 안 팔리는 상품은 다른 S/A 키워드로 교체</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div style="background:#F8FAFC;padding:40px 32px;margin-top:16px;border-radius:14px;border:1px solid var(--gray-100)">
+    <div style="max-width:760px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:36px">
+        <div style="font-size:12px;color:var(--primary);font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px">FAQ</div>
+        <h2 style="font-size:28px;font-weight:800;color:var(--navy);margin:0;letter-spacing:-0.5px">자주 묻는 질문</h2>
+      </div>
+
+      <details class="faq-item" style="background:#fff;border:1px solid var(--gray-100);border-radius:10px;padding:16px 20px;margin-bottom:10px;cursor:pointer">
+        <summary style="font-size:14px;font-weight:600;color:var(--navy)">Q. 잔액은 만료되나요?</summary>
+        <p style="font-size:13px;color:var(--gray-600);line-height:1.7;margin:12px 0 0">아니요. 충전한 잔액은 <b>영구 보유</b>됩니다. 정기결제 없음.</p>
+      </details>
+
+      <details class="faq-item" style="background:#fff;border:1px solid var(--gray-100);border-radius:10px;padding:16px 20px;margin-bottom:10px;cursor:pointer">
+        <summary style="font-size:14px;font-weight:600;color:var(--navy)">Q. 키워드가 10개 미만 나오는 상품도 차감되나요?</summary>
+        <p style="font-size:13px;color:var(--gray-600);line-height:1.7;margin:12px 0 0">네, 모든 처리 성공 상품은 1건씩 차감됩니다. 추출량 0건 상품(상품명이 너무 일반적이거나 카테고리 필터에 걸린 경우)은 차감되지 않습니다.</p>
+      </details>
+
+      <details class="faq-item" style="background:#fff;border:1px solid var(--gray-100);border-radius:10px;padding:16px 20px;margin-bottom:10px;cursor:pointer">
+        <summary style="font-size:14px;font-weight:600;color:var(--navy)">Q. UPlat 말고 다른 양식도 되나요?</summary>
+        <p style="font-size:13px;color:var(--gray-600);line-height:1.7;margin:12px 0 0">UPlat, 사방넷, 샵링커, 자체 양식 모두 자동 감지. D열에 상품명이 있으면 작동합니다.</p>
+      </details>
+
+      <details class="faq-item" style="background:#fff;border:1px solid var(--gray-100);border-radius:10px;padding:16px 20px;margin-bottom:10px;cursor:pointer">
+        <summary style="font-size:14px;font-weight:600;color:var(--navy)">Q. 처리 결과는 어디서 다시 받을 수 있나요?</summary>
+        <p style="font-size:13px;color:var(--gray-600);line-height:1.7;margin:12px 0 0">사이드바 <b>📁 엑셀 기록</b>에서 처리한 모든 파일을 다시 다운로드할 수 있습니다.</p>
+      </details>
+
+      <details class="faq-item" style="background:#fff;border:1px solid var(--gray-100);border-radius:10px;padding:16px 20px;margin-bottom:10px;cursor:pointer">
+        <summary style="font-size:14px;font-weight:600;color:var(--navy)">Q. 같은 상품을 다시 처리하면 결과가 같나요?</summary>
+        <p style="font-size:13px;color:var(--gray-600);line-height:1.7;margin:12px 0 0">네이버 검색량은 캐시됩니다(24h). 동일 상품 재처리 시 비용은 차감되지만 결과는 거의 동일합니다.</p>
+      </details>
+
+      <details class="faq-item" style="background:#fff;border:1px solid var(--gray-100);border-radius:10px;padding:16px 20px;margin-bottom:10px;cursor:pointer">
+        <summary style="font-size:14px;font-weight:600;color:var(--navy)">Q. 영수증/세금계산서 발급되나요?</summary>
+        <p style="font-size:13px;color:var(--gray-600);line-height:1.7;margin:12px 0 0">네. 설정 페이지에 사업자번호 등록 시 충전마다 자동 발급됩니다.</p>
+      </details>
+
+      <details class="faq-item" style="background:#fff;border:1px solid var(--gray-100);border-radius:10px;padding:16px 20px;margin-bottom:10px;cursor:pointer">
+        <summary style="font-size:14px;font-weight:600;color:var(--navy)">Q. 빠른 모드 vs 정밀 모드 차이는?</summary>
+        <p style="font-size:13px;color:var(--gray-600);line-height:1.7;margin:12px 0 0">빠른 모드: 상품당 키워드 10~30개, 약 0.5초/상품. 정밀 모드: 상품당 30~80개, 약 1초/상품. 차감 비용은 동일합니다.</p>
+      </details>
+
+      <details class="faq-item" style="background:#fff;border:1px solid var(--gray-100);border-radius:10px;padding:16px 20px;margin-bottom:10px;cursor:pointer">
+        <summary style="font-size:14px;font-weight:600;color:var(--navy)">Q. 처리 중 브라우저를 닫으면?</summary>
+        <p style="font-size:13px;color:var(--gray-600);line-height:1.7;margin:12px 0 0">진행 중인 작업은 서버에서 계속 처리됩니다. 사이드바 <b>📁 엑셀 기록</b>에서 완료 후 다운로드.</p>
+      </details>
+
+      <details class="faq-item" style="background:#fff;border:1px solid var(--gray-100);border-radius:10px;padding:16px 20px;margin-bottom:10px;cursor:pointer">
+        <summary style="font-size:14px;font-weight:600;color:var(--navy)">Q. API로 자동 연동 가능한가요?</summary>
+        <p style="font-size:13px;color:var(--gray-600);line-height:1.7;margin:12px 0 0">Enterprise 플랜에서 REST API 제공. 문의: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5c30342f1c3e2e353b3428393230303f723f3331">[email&#160;protected]</a></p>
+      </details>
+
+      <details class="faq-item" style="background:#fff;border:1px solid var(--gray-100);border-radius:10px;padding:16px 20px;cursor:pointer">
+        <summary style="font-size:14px;font-weight:600;color:var(--navy)">Q. 환불 정책은?</summary>
+        <p style="font-size:13px;color:var(--gray-600);line-height:1.7;margin:12px 0 0">미사용 잔액은 충전일로부터 7일 내 환불 가능. 사용분은 환불 불가. 자세한 사항은 <a onclick="go('terms')" style="color:var(--primary);cursor:pointer">이용약관</a> 참고.</p>
+      </details>
+
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="tutorial-cta" style="background:linear-gradient(135deg,#0F1B3D 0%,#1E3A8A 100%);padding:48px 32px;text-align:center;color:#fff;border-radius:14px;margin-top:16px">
+    <div style="max-width:600px;margin:0 auto">
+      <h2 style="font-size:26px;font-weight:800;letter-spacing:-0.5px;margin:0 0 12px">지금 시작하세요</h2>
+      <p style="font-size:13px;color:#BFDBFE;margin:0 0 20px">10 상품 무료 체험 · 1분 가입 · 카드 등록 불필요</p>
+      <button class="btn btn-primary btn-lg" onclick="go('signup')" style="background:#fff;color:#1E3A8A">무료로 시작하기 →</button>
+    </div>
+  </div>
+
+    </main>
+  </div>
+  <div class="foot">주식회사 덕우무역 · 대표 김자헌 · 사업자등록번호 145-81-03589 · 통신판매업 2025-서울구로-1723호<br>서울특별시 구로구 경인로53길 15, 중앙유통단지 업무에이동 053호 · 고객문의 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9af6f2e9daf8e8f3fdf2eefff4f6f6f9b4f9f5f7">[email&#160;protected]</a><br><a onclick="go('terms')">이용약관</a> · <a onclick="go('privacy')">개인정보처리방침</a> · <a onclick="go('landing')">홈</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
 </div>
 
 
@@ -1540,7 +1836,7 @@
     <p style="font-size:12px;color:var(--gray-500);margin-bottom:24px">시행일자: 2026년 7월 1일</p>
     <div class="card" style="padding:32px;line-height:1.8;font-size:13px;color:var(--gray-700)">
       <h2 style="font-size:15px;font-weight:700;color:var(--navy);margin:20px 0 10px">제1조 (목적)</h2>
-      <p>이 약관은 덕우무역(주)("회사")가 제공하는 keywordlab.ai 서비스("서비스")의 이용과 관련하여 회사와 이용자 간의 권리·의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.</p>
+      <p>이 약관은 주식회사 덕우무역("회사")가 제공하는 keywordlab.ai 서비스("서비스")의 이용과 관련하여 회사와 이용자 간의 권리·의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.</p>
 
       <h2 style="font-size:15px;font-weight:700;color:var(--navy);margin:20px 0 10px">제2조 (용어의 정의)</h2>
       <p>① "서비스"란 네이버 스마트스토어 등을 위한 키워드 분석/추출 SaaS를 의미합니다.<br>
@@ -1581,7 +1877,7 @@
       </div>
     </div>
   </div>
-  <div class="foot">덕우무역(주) · 대표 이한상 · 사업자등록번호 123-45-67890 · 통신판매업 2026-서울강남-XXXXX<br>서울특별시 강남구 테헤란로 123 · 고객문의 lhs@brightenllc.com<br>© 2026 keywordlab.ai. All rights reserved.</div>
+  <div class="foot">주식회사 덕우무역 · 대표 김자헌 · 사업자등록번호 145-81-03589 · 통신판매업 2025-서울구로-1723호<br>서울특별시 구로구 경인로53길 15, 중앙유통단지 업무에이동 053호 · 고객문의 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="305c584370524259575844555e5c5c531e535f5d">[email&#160;protected]</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
 </div>
 
 
@@ -1597,7 +1893,7 @@
     <h1 style="font-size:24px;font-weight:800;color:var(--navy);margin-bottom:6px">개인정보처리방침</h1>
     <p style="font-size:12px;color:var(--gray-500);margin-bottom:24px">시행일자: 2026년 7월 1일</p>
     <div class="card" style="padding:32px;line-height:1.8;font-size:13px;color:var(--gray-700)">
-      <p style="margin-bottom:16px">덕우무역(주)("회사")는 정보통신망 이용촉진 및 정보보호 등에 관한 법률, 개인정보 보호법 등 관련 법령을 준수하며, 이용자의 개인정보를 보호하기 위해 다음과 같이 처리방침을 수립·공개합니다.</p>
+      <p style="margin-bottom:16px">주식회사 덕우무역("회사")는 정보통신망 이용촉진 및 정보보호 등에 관한 법률, 개인정보 보호법 등 관련 법령을 준수하며, 이용자의 개인정보를 보호하기 위해 다음과 같이 처리방침을 수립·공개합니다.</p>
 
       <h2 style="font-size:15px;font-weight:700;color:var(--navy);margin:20px 0 10px">1. 수집하는 개인정보 항목</h2>
       <p>회사는 서비스 제공을 위해 다음 항목을 수집합니다.<br>
@@ -1628,23 +1924,23 @@
          · <strong>Vercel Inc.</strong> (호스팅) — 미국</p>
 
       <h2 style="font-size:15px;font-weight:700;color:var(--navy);margin:20px 0 10px">6. 이용자의 권리</h2>
-      <p>이용자는 언제든지 개인정보 조회·수정·삭제·처리 정지를 요구할 수 있으며, 설정 페이지 또는 lhs@brightenllc.com으로 요청 가능합니다.</p>
+      <p>이용자는 언제든지 개인정보 조회·수정·삭제·처리 정지를 요구할 수 있으며, 설정 페이지 또는 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="85e9edf6c5e7f7ece2edf1e0ebe9e9e6abe6eae8">[email&#160;protected]</a>으로 요청 가능합니다.</p>
 
       <h2 style="font-size:15px;font-weight:700;color:var(--navy);margin:20px 0 10px">7. 개인정보 보호 책임자</h2>
       <p>이름: 이한상 (대표이사)<br>
-         이메일: lhs@brightenllc.com</p>
+         이메일: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b7dbdfc4f7d5c5ded0dfc3d2d9dbdbd499d4d8da">[email&#160;protected]</a></p>
 
       <div style="border-top:1px solid var(--gray-200);margin-top:24px;padding-top:14px;font-size:11px;color:var(--gray-400)">
         본 처리방침은 2026년 7월 1일부터 시행합니다. 변경 시 사전 공지합니다.
       </div>
     </div>
   </div>
-  <div class="foot">덕우무역(주) · 대표 이한상 · 사업자등록번호 123-45-67890 · 통신판매업 2026-서울강남-XXXXX<br>서울특별시 강남구 테헤란로 123 · 고객문의 lhs@brightenllc.com<br>© 2026 keywordlab.ai. All rights reserved.</div>
+  <div class="foot">주식회사 덕우무역 · 대표 김자헌 · 사업자등록번호 145-81-03589 · 통신판매업 2025-서울구로-1723호<br>서울특별시 구로구 경인로53길 15, 중앙유통단지 업무에이동 053호 · 고객문의 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6a0602192a0818030d021e0f0406060944090507">[email&#160;protected]</a><br>© 2026 keywordlab.ai. All rights reserved.</div>
 </div>
 
 
 <!-- ═══════════ JS ═══════════ -->
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ============= API 상수 =============
 const API_URL = "https://uifjabklkmvfbsplvxsu.supabase.co/functions/v1/keyword-tool";
 const SB_URL = "https://uifjabklkmvfbsplvxsu.supabase.co";
@@ -1665,7 +1961,17 @@ let currentBalance = 0;
 // 토큰 자동 갱신 + 세션 상태 변화 감지 (try-catch로 보호 — 함수 미정의 시점에도 안전)
 sb.auth.onAuthStateChange((event, session) => {
   try {
-    if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+    if (event === 'PASSWORD_RECOVERY') {
+      // 비번 재설정 메일 링크로 진입 — Supabase가 hash 처리 후 이 이벤트 발생
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const recoveryPage = document.getElementById('p-recovery');
+      if (recoveryPage) recoveryPage.classList.add('active');
+      window.scrollTo(0, 0);
+      // hash 정리 (보안) — 세션 생성 후이므로 안전
+      if (window.location.hash) {
+        history.replaceState(null, '', window.location.pathname);
+      }
+    } else if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
       if (session) {
         currentUser = session.user;
         if (typeof refreshBalance === 'function') refreshBalance();
@@ -1722,7 +2028,7 @@ async function requireAuth(targetPage) {
 const I18N = {
   ko: {
     'side.tools': '키워드 도구', 'side.word_search': '단어 검색', 'side.excel_search': '엑셀 검색',
-    'side.shortcuts': '바로가기', 'side.word_log': '단어 기록', 'side.excel_log': '엑셀 기록', 'side.charge': '충전',
+    'side.shortcuts': '바로가기', 'side.word_log': '단어 기록', 'side.excel_log': '엑셀 기록', 'side.charge': '충전', 'side.tutorial': '사용 가이드',
     'side.account': '계정', 'side.settings': '설정', 'side.admin': '어드민', 'side.logout': '로그아웃',
     'page.search_title': '검색 도구', 'page.word_log_title': '단어 기록',
     'page.excel_log_title': '엑셀 기록', 'page.charge_title': '충전', 'page.settings_title': '설정',
@@ -1730,7 +2036,7 @@ const I18N = {
   },
   en: {
     'side.tools': 'Keyword Tools', 'side.word_search': 'Word Search', 'side.excel_search': 'Excel Search',
-    'side.shortcuts': 'Shortcuts', 'side.word_log': 'Word History', 'side.excel_log': 'Excel History', 'side.charge': 'Top up',
+    'side.shortcuts': 'Shortcuts', 'side.word_log': 'Word History', 'side.excel_log': 'Excel History', 'side.charge': 'Top up', 'side.tutorial': 'Guide',
     'side.account': 'Account', 'side.settings': 'Settings', 'side.admin': 'Admin', 'side.logout': 'Logout',
     'page.search_title': 'Search Tools', 'page.word_log_title': 'Word History',
     'page.excel_log_title': 'Excel History', 'page.charge_title': 'Top up', 'page.settings_title': 'Settings',
@@ -2402,22 +2708,8 @@ function endOnboarding() {
   document.getElementById('onboardingOverlay')?.remove();
 }
 
-// ============= 로그인/가입 페이지 백드롭 & ESC =============
-function authBackdropClick(e) {
-  // 클릭이 정확히 .auth-wrap에 일어났을 때만 (auth-card 내부 클릭 무시)
-  if (e.target.classList.contains('auth-wrap')) {
-    go('landing');
-  }
-}
-// ESC 키로 랜딩 복귀 (login/signup 페이지에서만)
-document.addEventListener('keydown', (e) => {
-  if (e.key !== 'Escape') return;
-  const active = document.querySelector('.page.active');
-  if (!active) return;
-  if (active.id === 'p-login' || active.id === 'p-signup') {
-    go('landing');
-  }
-});
+// 로그인/가입 페이지 백드롭 클릭 닫기 제거됨 (취소 버튼으로 대체)
+function authBackdropClick(e) { /* noop */ }
 
 // ============= 모바일 사이드바 =============
 function toggleSidebar() {
@@ -2436,6 +2728,13 @@ function closeSidebar() {
 const PROTECTED_PAGES = ['dash', 'jobs', 'library', 'charge', 'settings', 'admin'];
 let _isAdmin = false;
 
+// 로그인 후 로고 클릭 → 메인 대시보드의 엑셀 검색 탭 활성화
+async function goMain() {
+  await go('dash');
+  switchTool('bulk');
+}
+
+let _navigatingFromHistory = false;
 async function go(page) {
   // 보호 페이지 — 로그인 안 됐으면 login으로
   if (PROTECTED_PAGES.includes(page)) {
@@ -2454,6 +2753,13 @@ async function go(page) {
   window.scrollTo(0, 0);
   closeSidebar();
   updateAdminLinkActive();
+  // 브라우저 히스토리에 push (popstate 시엔 skip)
+  if (!_navigatingFromHistory) {
+    try {
+      const newUrl = page === 'landing' ? window.location.pathname : (window.location.pathname + '?p=' + page);
+      history.pushState({ page }, '', newUrl);
+    } catch(e) { console.error('pushState err', e); }
+  }
   // 마지막 활성 페이지 기억 (리프레시 시 복원용)
   if (PROTECTED_PAGES.includes(page)) {
     sessionStorage.setItem('lastPage', page);
@@ -2466,6 +2772,13 @@ async function go(page) {
   if (page === 'settings') loadSettings();
   if (page === 'admin') loadAdmin();
 }
+
+// ============= 브라우저 뒤로/앞으로 가기 처리 =============
+window.addEventListener('popstate', async (e) => {
+  const page = e.state?.page || (new URLSearchParams(window.location.search).get('p')) || 'landing';
+  _navigatingFromHistory = true;
+  try { await go(page); } finally { _navigatingFromHistory = false; }
+});
 
 // ============= 어드민 권한 체크 + 사이드바 항목 표시 =============
 async function checkAdmin() {
@@ -2503,6 +2816,14 @@ function updateAdminLinkActive() {
 // ============= 어드민 로드 =============
 async function loadAdmin() {
   if (!currentUser) return;
+  // 검색 필드 강제 초기화 (브라우저 자동 채우기 차단)
+  const _searchEl = document.getElementById('admUserSearch');
+  if (_searchEl) _searchEl.value = '';
+  // 첫 진입 시 stale JWT 방지 — 토큰 refresh (실패해도 진행)
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) await sb.auth.refreshSession();
+  } catch (e) { console.error('admin token refresh err', e); }
   // 권한 재체크
   await checkAdmin();
   if (!_isAdmin) {
@@ -3098,15 +3419,83 @@ function renderSingleTable() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // ============= URL hash로 recovery 감지 (비번 재설정 이메일 링크) =============
-  const hashParams = new URLSearchParams(window.location.hash.substring(1));
-  if (hashParams.get('type') === 'recovery') {
-    // Supabase가 자동으로 hash의 access_token으로 임시 세션 만들어줌
-    // 그 다음 사용자가 새 비번 입력 → updateUser 호출
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('p-recovery').classList.add('active');
-    // hash 정리 (보안)
-    history.replaceState(null, '', window.location.pathname);
+  // ============= 초기 진입 시 URL ?p= 페이지 직접 이동 (공개 페이지만) =============
+  // 보호 페이지(?p=dash 등)는 아래 세션 복원 코드가 lastPage 보고 자동 이동 처리
+  try {
+    const initialP = new URLSearchParams(window.location.search).get('p');
+    // 보호 페이지 URL로 새로고침 진입 시 lastPage에 저장 → 세션 복원 후 자동 이동
+    if (initialP && PROTECTED_PAGES.includes(initialP)) {
+      sessionStorage.setItem('lastPage', initialP);
+    }
+    if (initialP && !['recovery'].includes(initialP) && !PROTECTED_PAGES.includes(initialP)) {
+      const target = document.getElementById('p-' + initialP);
+      if (target) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        target.classList.add('active');
+        // history.replaceState로 state 보강 (현재 URL은 유지, popstate 호환)
+        try { history.replaceState({ page: initialP }, '', window.location.pathname + '?p=' + initialP); } catch(e) {}
+      }
+    }
+  } catch(e) { console.error('initial ?p= handler error', e); }
+
+  // ============= 비번 재설정 메일 링크 처리 (detectSessionInUrl: false 환경에서 수동) =============
+  try {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const queryParams = new URLSearchParams(window.location.search);
+
+    // 1) 에러 처리 (만료 / 잘못된 링크 등)
+    const errCode = hashParams.get('error_code') || queryParams.get('error_code');
+    const errDesc = hashParams.get('error_description') || queryParams.get('error_description');
+    if (errCode) {
+      history.replaceState(null, '', window.location.pathname);
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('p-login').classList.add('active');
+      const loginErrEl = document.getElementById('loginError');
+      if (loginErrEl) {
+        let msg = '링크가 유효하지 않습니다.';
+        if (errCode === 'otp_expired') msg = '⏰ 메일 링크가 만료되었거나 이미 사용되었습니다.\n아래 "비밀번호를 잊으셨나요?"를 다시 눌러 새 메일을 받으세요.';
+        else if (errCode === 'access_denied') msg = '🚫 접근이 거부되었습니다. 다시 시도해주세요.';
+        else if (errDesc) msg = '오류: ' + decodeURIComponent(errDesc).replace(/\+/g, ' ');
+        loginErrEl.textContent = msg;
+        loginErrEl.style.whiteSpace = 'pre-line';
+        loginErrEl.style.display = 'block';
+      }
+      // return 제거 — 아래 이벤트 리스너 등록 차단 방지
+    }
+
+    // 2) implicit flow: #access_token=...&type=recovery
+    else if (hashParams.get('type') === 'recovery') {
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      if (accessToken && refreshToken) {
+        const { error: setErr } = await sb.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        });
+        if (!setErr) {
+          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+          document.getElementById('p-recovery').classList.add('active');
+          history.replaceState(null, '', window.location.pathname);
+          window.scrollTo(0, 0);
+        }
+      }
+    }
+
+    // 3) PKCE flow: ?code=... query param
+    else {
+      const code = queryParams.get('code');
+      if (code) {
+        const { error: exErr } = await sb.auth.exchangeCodeForSession(code);
+        if (!exErr) {
+          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+          document.getElementById('p-recovery').classList.add('active');
+          history.replaceState(null, '', window.location.pathname);
+          window.scrollTo(0, 0);
+        }
+      }
+    }
+  } catch (e) {
+    console.error('recovery hash handler error', e);
   }
 
   // 비번 재설정 제출
@@ -3130,7 +3519,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { error } = await sb.auth.updateUser({ password: newPw });
     btn.disabled = false; btn.textContent = '비밀번호 변경 완료';
     if (error) {
-      msgEl.textContent = '변경 실패: ' + error.message;
+      msgEl.textContent = (typeof window.__authErrKo === 'function' ? window.__authErrKo(error.message) : ('변경 실패: ' + error.message));
       msgEl.style.background = '#FEF2F2'; msgEl.style.borderColor = '#FECACA'; msgEl.style.color = '#991B1B';
       msgEl.style.display = 'block'; return;
     }
@@ -3162,18 +3551,54 @@ document.addEventListener('DOMContentLoaded', async () => {
       // 자동 백업 (백그라운드)
       setTimeout(() => checkAutoBackup().catch(e => console.error('auto backup error', e)), 3000);
 
-      // 마지막 활성 페이지 복원 (로그인 상태일 때만)
-      const lastPage = sessionStorage.getItem('lastPage');
-      if (lastPage && PROTECTED_PAGES.includes(lastPage)) {
-        go(lastPage);
-      } else if (document.querySelector('.page.active')?.id === 'p-landing') {
-        // 랜딩에서 시작했지만 이미 로그인됐다면 dash로
-        go('dash');
+      // 비번 재설정 페이지면 그대로 둠 (페이지 이동/온보딩 차단)
+      const activeId = document.querySelector('.page.active')?.id;
+      if (activeId !== 'p-recovery') {
+        // 페이지 복원 우선순위:
+        //  1) URL ?p=<protected> — 새로고침 시 명시적 URL → 그대로 복원
+        //  2) reload/back_forward → sessionStorage lastPage 복원
+        //  3) 직접 진입(navigate) → 랜딩 유지 (자동 이동 X)
+        const urlP = new URLSearchParams(window.location.search).get('p');
+        const navType = performance.getEntriesByType('navigation')[0]?.type;
+        const isReloadOrBack = navType === 'reload' || navType === 'back_forward';
+        if (urlP && PROTECTED_PAGES.includes(urlP)) {
+          go(urlP);
+        } else if (isReloadOrBack) {
+          const lastPage = sessionStorage.getItem('lastPage');
+          if (lastPage && PROTECTED_PAGES.includes(lastPage)) {
+            go(lastPage);
+          }
+        }
+        // 신규 가입 직후 onboarding만 시작 (페이지 강제 이동 X)
+        // startOnboarding 내부에서 localStorage onboardingDone 체크
+        setTimeout(() => { try { startOnboarding(); } catch(e) { console.error(e); } }, 800);
       }
     }
   } catch (e) {
     console.error('session restore error', e);
   }
+
+  // ============= Supabase 에러 메시지 한국어 변환 =============
+  function ko(supabaseErrorMsg) {
+    if (!supabaseErrorMsg) return '알 수 없는 오류';
+    const m = String(supabaseErrorMsg).toLowerCase();
+    if (m.includes('invalid login credentials')) return '이메일 또는 비밀번호가 올바르지 않습니다';
+    if (m.includes('email not confirmed')) return '이메일 인증이 필요합니다. 메일함을 확인해주세요';
+    if (m.includes('email rate limit exceeded')) return '메일 발송 한도를 초과했습니다. 잠시 후 다시 시도하세요';
+    if (m.includes('user already registered') || m.includes('already registered')) return '이미 가입된 이메일입니다';
+    if (m.includes('for security purposes') || m.includes('only request this') || m.includes('over_email_send_rate_limit')) {
+      const secMatch = String(supabaseErrorMsg).match(/(\d+)\s*seconds?/i);
+      const sec = secMatch ? secMatch[1] : '60';
+      return `잠시만요 — 보안을 위해 ${sec}초 후 다시 시도해주세요`;
+    }
+    if (m.includes('password should be at least')) return '비밀번호는 8자 이상이어야 합니다';
+    if (m.includes('signup is disabled') || m.includes('signups not allowed')) return '현재 회원가입이 일시 중단됐습니다';
+    if (m.includes('unable to validate email address') || m.includes('invalid email')) return '이메일 형식이 올바르지 않습니다';
+    if (m.includes('network') || m.includes('failed to fetch')) return '네트워크 오류. 인터넷 연결을 확인해주세요';
+    if (m.includes('auth session missing')) return '세션이 만료되었습니다. 메일 링크를 다시 요청해주세요';
+    return supabaseErrorMsg; // 매핑 없으면 원문
+  }
+  window.__authErrKo = ko;
 
   // ============= 로그인 =============
   const btnLogin = document.getElementById('btnLogin');
@@ -3191,7 +3616,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
     btnLogin.disabled = false; btnLogin.textContent = '로그인';
     if (error) {
-      errEl.textContent = '로그인 실패: ' + error.message;
+      errEl.textContent = ko(error.message);
       errEl.style.display = 'block';
       return;
     }
@@ -3200,6 +3625,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     await checkAdmin();
     await loadFavorites();
     go('dash');
+    // 첫 로그인이면 온보딩 (localStorage 체크는 startOnboarding 내부에서)
+    setTimeout(() => { try { startOnboarding(); } catch(e) { console.error(e); } }, 600);
   });
 
   // ============= 회원가입 =============
@@ -3228,19 +3655,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     btnSignup.disabled = false; btnSignup.textContent = '가입하기 → 10 상품 무료';
     if (error) {
-      errEl.textContent = '가입 실패: ' + error.message;
+      errEl.textContent = (typeof ko === 'function' ? ko(error.message) : ('가입 실패: ' + error.message));
+      errEl.style.background = '#FEF2F2';
+      errEl.style.borderColor = '#FECACA';
+      errEl.style.color = '#991B1B';
       errEl.style.display = 'block';
       return;
     }
+    // 새 가입자임을 표시 → 첫 로그인 시 온보딩 강제 트리거용
+    try { localStorage.setItem('isNewSignup', '1'); localStorage.removeItem('onboardingDone'); } catch(e) {}
     if (data.user && data.session) {
+      // 즉시 세션 (Confirm email OFF 환경)
       currentUser = data.user;
       await new Promise(r => setTimeout(r, 800));
       await refreshBalance();
       go('dash');
-      // 신규 가입 직후 온보딩 자동 시작
-      setTimeout(() => startOnboarding(), 500);
+      setTimeout(() => { try { startOnboarding(); } catch(e) { console.error(e); } }, 500);
     } else {
-      errEl.textContent = '이메일 확인 메일을 보냈습니다. 메일 확인 후 로그인하세요.';
+      // Confirm email ON 환경 — 메일 인증 후 로그인 필요
+      errEl.innerHTML = '📧 <b>' + email + '</b>로 인증 메일을 보냈습니다.<br>메일함(정크함도 확인) → 인증 → 로그인하시면 5단계 가이드가 시작됩니다.';
       errEl.style.background = '#DBEAFE';
       errEl.style.borderColor = '#93C5FD';
       errEl.style.color = '#1E40AF';
@@ -3333,10 +3766,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 계정 삭제 요청
   document.getElementById('btnDeleteAccount')?.addEventListener('click', async () => {
     if (!currentUser) return;
-    const confirmText = prompt('정말 계정을 삭제하시겠습니까?\n\n모든 검색 이력 · 처리 이력 · 잔액이 영구 삭제됩니다.\n\n계속하려면 "삭제"라고 입력하세요:');
+    const confirmText = prompt('정말 계정을 삭제하시겠습니까?\n\n• 모든 검색 이력 · 처리 이력 · 잔액이 영구 삭제됩니다.\n• 환불은 불가합니다.\n• 같은 이메일로 재가입은 가능하나 데이터 복구 X.\n\n계속하려면 "삭제"라고 입력하세요:');
     if (confirmText !== '삭제') return;
-    alert('계정 삭제 요청을 접수했습니다. 운영팀이 24시간 내 처리합니다.\n(이메일: lhs@brightenllc.com)');
-    // 실제 삭제는 admin API 필요 — 운영팀 수동 처리
+
+    const btn = document.getElementById('btnDeleteAccount');
+    btn.disabled = true; btn.textContent = '삭제 처리 중...';
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const accessToken = session?.access_token;
+      if (!accessToken) throw new Error('세션이 만료되었습니다');
+
+      // Edge Function 호출
+      const res = await fetch(`${SB_URL}/functions/v1/delete-account`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'apikey': SB_ANON_KEY
+        }
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `삭제 실패 (${res.status})`);
+
+      alert('✅ 계정이 삭제되었습니다.\n탈퇴 확인 메일을 보내드렸습니다.\n이용해주셔서 감사합니다.');
+      try { await sb.auth.signOut(); } catch(e) {}
+      currentUser = null;
+      try { localStorage.removeItem('onboardingDone'); localStorage.removeItem('isNewSignup'); } catch(e) {}
+      try { sessionStorage.removeItem('lastPage'); } catch(e) {}
+      window.location.href = '/';
+    } catch (e) {
+      console.error('delete-account error', e);
+      alert('삭제 실패: ' + (e.message || '알 수 없는 오류'));
+      btn.disabled = false; btn.textContent = '계정 삭제 요청';
+    }
   });
 
   // ============= 피드백 위젯 =============
@@ -3499,7 +3961,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
       const data = await res.json();
-      singleKeywords = data.keywords || [];
+      singleKeywords = dedupeBySubstring(data.keywords || []);
 
       document.getElementById('singleTotal').textContent = singleKeywords.length;
       document.getElementById('singleTopVol').textContent = singleKeywords[0]?.volume?.toLocaleString() || '0';
@@ -3583,6 +4045,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
     });
     fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+  }
+
+  // 키워드 substring 중복 제거 — 더 긴 키워드 안에 짧은 키워드가 포함되면 짧은 거 제거
+  // 예: [보관함, 화장품보관함, 투명아크릴보관함, 아크릴보관함] → [투명아크릴보관함, 화장품보관함]
+  function dedupeBySubstring(keywords) {
+    if (!Array.isArray(keywords) || keywords.length < 2) return keywords || [];
+    // 길이 내림차순 정렬 (긴 거 먼저 보존)
+    const sorted = [...keywords].sort((a, b) => (b.keyword?.length || 0) - (a.keyword?.length || 0));
+    const result = [];
+    for (const kw of sorted) {
+      if (!kw || !kw.keyword) continue;
+      const k = kw.keyword;
+      // 이미 보존된 결과 중 자신을 포함하는 것이 있으면 skip
+      const isContained = result.some(r => r.keyword !== k && r.keyword.includes(k));
+      if (!isContained) result.push(kw);
+    }
+    return result;
   }
 
   // 양식별 컬럼 매핑 (0-indexed)
@@ -3722,7 +4201,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         try {
           const data = await processOne(g);
-          g.keywords = data.keywords || [];
+          g.keywords = dedupeBySubstring(data.keywords || []);
           const ic = data.image_count !== undefined ? data.image_count : g.keywords.length;
           kwEl.textContent = `${ic}개`;
           log(`완료: ${g.name} — ${ic}개`, 'success');
@@ -3798,15 +4277,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   if (btnDownload) btnDownload.addEventListener('click', async () => {
-    // 양식별 결과 컬럼 (D열 상품명 위치, L열 키워드 위치)
+    // 양식별 결과 컬럼 (D열에 새 AI 상품명, L열에 키워드 분배)
+    // 입력은 nameCol(원본 풀제목 = E열)에서 읽고, 출력은 fallbackNameCol(D열)에 쓴다
+    // → 원본 E열은 보존, 새 AI 제목은 D열에 작성
     const map = window._currentFormatMap || FORMAT_MAPS.uplat;
-    const colD = map.nameCol;       // 상품명 컬럼 (양식별 다름)
+    const titleOutCol = (typeof map.titleOutCol === 'number') ? map.titleOutCol : map.fallbackNameCol;
     const colL = (window._currentFormat === 'uplat') ? 11
                 : (window._currentFormat === 'sabangnet') ? 10
                 : 12;  // shoplinker
     for (const g of productGroups) {
       if (!g.keywords || !g.keywords.length) continue;
-      if (g.title) for (const r of g.rows) sheetData[r][colD] = g.title;
+      if (g.title) for (const r of g.rows) sheetData[r][titleOutCol] = g.title;
       const kws = g.keywords, rowCount = g.rows.length;
       if (rowCount === 1) {
         sheetData[g.rows[0]][colL] = kws.map(k => k.keyword).join(',');
